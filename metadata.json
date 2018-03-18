@@ -1,0 +1,8 @@
+{
+  "name": "Bluetooth quick connect",
+  "description": "Allow to connect to paired devices from gnome control panel.",
+  "uuid": "bluetooth-quick-connect@bjarosze.gmail.com",
+  "shell-version": [
+    "3.26.2"
+  ]
+}
