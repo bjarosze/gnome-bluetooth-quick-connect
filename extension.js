@@ -1,8 +1,8 @@
 const Main = imports.ui.main;
 const GnomeBluetooth = imports.gi.GnomeBluetooth;
 const PopupMenu = imports.ui.popupMenu;
-const GLib = imports.gi.GLib;
 const Util = imports.misc.util;
+const GLib = imports.gi.GLib;
 
 class BluetoothDevice {
     constructor(model, device) {
@@ -62,21 +62,34 @@ class BluetoothQuickConnect {
         this._model = bluetooth._model;
         this._getDefaultAdapter = bluetooth._getDefaultAdapter;
         this._menu = bluetooth._item.menu;
+        this._proxy = bluetooth._proxy;
 
         this._signals = [];
     }
 
     enable() {
-        let signal = this._menu.connect('open-state-changed', (menu, isOpen) => {
+        this._connectSignal(this._menu, 'open-state-changed', (menu, isOpen) => {
             if (isOpen)
-                this._sync();
+                this._proxy.BluetoothAirplaneMode = false;
         });
 
-        this._signals.push(signal);
+        this._connectSignal(this._model, 'row-changed', () => this._sync());
+        this._connectSignal(this._model, 'row-deleted', () => this._sync());
+        this._connectSignal(this._model, 'row-inserted', () => this._sync());
+
+        this._sync();
     }
 
     disable() {
         this._destroy();
+    }
+
+    _connectSignal(subject, signal_name, method) {
+        let signal_id = subject.connect(signal_name, method);
+        this._signals.push({
+            subject: subject,
+            signal_id: signal_id
+        });
     }
 
     _getPairedDevices() {
@@ -98,6 +111,12 @@ class BluetoothQuickConnect {
         return pairedDevices;
     }
 
+    _getConnectedDevices() {
+        return this._menu._getMenuItems().filter((item) => {
+            return item.isDeviceSwitcher && item.state
+        });
+    }
+
     _sync() {
         this._removeDevicesFromMenu();
         this._addDevicesToMenu();
@@ -105,6 +124,10 @@ class BluetoothQuickConnect {
 
     _addDevicesToMenu() {
         this._getPairedDevices().forEach((device) => {
+            device.item.connect('toggled', (item, state) => {
+                if (!state && this._getConnectedDevices().length === 0)
+                    this._proxy.BluetoothAirplaneMode = true;
+            });
             this._menu.addMenuItem(device.item, 1);
         });
     }
@@ -119,7 +142,7 @@ class BluetoothQuickConnect {
 
     _destroy() {
         this._signals.forEach((signal) => {
-            this._menu.disconnect(signal);
+            signal.subject.disconnect(signal.signal_id);
         });
         this._signals = [];
         this._removeDevicesFromMenu();
