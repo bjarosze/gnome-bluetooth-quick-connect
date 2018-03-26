@@ -72,16 +72,26 @@ class BluetoothQuickConnect {
             if (isOpen)
                 this._proxy.BluetoothAirplaneMode = false;
         });
-
+        
         this._connectSignal(this._model, 'row-changed', () => this._sync());
         this._connectSignal(this._model, 'row-deleted', () => this._sync());
         this._connectSignal(this._model, 'row-inserted', () => this._sync());
 
-        this._sync();
+        this._proxy.BluetoothAirplaneMode = false;
+        this._idleMonitor();
     }
 
     disable() {
         this._destroy();
+    }
+
+    _idleMonitor() {
+        this._idleMonitorId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 60 * 1000, () => {
+            if (this._getConnectedDevices().length === 0)
+                this._proxy.BluetoothAirplaneMode = true;
+
+            return true;
+        }, null);
     }
 
     _connectSignal(subject, signal_name, method) {
@@ -92,28 +102,31 @@ class BluetoothQuickConnect {
         });
     }
 
-    _getPairedDevices() {
+    _getDevices() {
         let adapter = this._getDefaultAdapter();
         if (!adapter)
             return [];
 
-        let pairedDevices = [];
+        let devices = [];
 
         let [ret, iter] = this._model.iter_children(adapter);
         while (ret) {
-            let bluetoothDevice = new BluetoothDevice(this._model, iter);
-            if (bluetoothDevice.isPaired || bluetoothDevice.isConnected)
-                pairedDevices.push(bluetoothDevice);
-
+            devices.push(new BluetoothDevice(this._model, iter));
             ret = this._model.iter_next(iter);
         }
 
-        return pairedDevices;
+        return devices;
+    }
+
+    _getPairedDevices() {
+        return this._getDevices().filter((device) => {
+            return device.isPaired || device.isConnected;
+        });
     }
 
     _getConnectedDevices() {
-        return this._menu._getMenuItems().filter((item) => {
-            return item.isDeviceSwitcher && item.state
+        return this._getDevices().filter((device) => {
+            return device.isConnected;
         });
     }
 
@@ -124,10 +137,6 @@ class BluetoothQuickConnect {
 
     _addDevicesToMenu() {
         this._getPairedDevices().forEach((device) => {
-            device.item.connect('toggled', (item, state) => {
-                if (!state && this._getConnectedDevices().length === 0)
-                    this._proxy.BluetoothAirplaneMode = true;
-            });
             this._menu.addMenuItem(device.item, 1);
         });
     }
@@ -146,6 +155,9 @@ class BluetoothQuickConnect {
         });
         this._signals = [];
         this._removeDevicesFromMenu();
+
+        if (this._idleMonitorId)
+            GLib.Source.remove(this._idleMonitorId);
     }
 }
 
