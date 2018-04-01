@@ -121,6 +121,7 @@ class BluetoothQuickConnect {
         this._signals.forEach((signal) => {
             this._menu.disconnect(signal);
         });
+        this._signals = [];
         this._removeDevicesFromMenu();
     }
 }
