@@ -59,24 +59,41 @@ class BluetoothDevice {
 
 class BluetoothQuickConnect {
     constructor(bluetooth) {
-        this._model = bluetooth._model;
-        this._getDefaultAdapter = bluetooth._getDefaultAdapter;
         this._menu = bluetooth._item.menu;
 
         this._signals = [];
     }
 
     enable() {
+        this._loadBluetoothModel();
         let signal = this._menu.connect('open-state-changed', (menu, isOpen) => {
             if (isOpen)
                 this._sync();
         });
 
         this._signals.push(signal);
+        this._sync();
     }
 
     disable() {
         this._destroy();
+    }
+
+    _loadBluetoothModel() {
+        this._client = new GnomeBluetooth.Client();
+        this._model = this._client.get_model();
+    }
+
+    _getDefaultAdapter() {
+        let [ret, iter] = this._model.get_iter_first();
+        while (ret) {
+            let isDefault = this._model.get_value(iter, GnomeBluetooth.Column.DEFAULT);
+            let isPowered = this._model.get_value(iter, GnomeBluetooth.Column.POWERED);
+            if (isDefault && isPowered)
+                return iter;
+            ret = this._model.iter_next(iter);
+        }
+        return null;
     }
 
     _getPairedDevices() {
@@ -126,6 +143,7 @@ class BluetoothQuickConnect {
     }
 }
 
+let bluetoothQuickConnect = null;
 
 function init() {
     let bluetooth = Main.panel.statusArea.aggregateMenu._bluetooth;

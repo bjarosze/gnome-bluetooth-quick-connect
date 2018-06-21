@@ -4,6 +4,7 @@
   "uuid": "bluetooth-quick-connect@bjarosze.gmail.com",
   "url": "https://github.com/bjarosze/gnome-bluetooth-quick-connect",
   "shell-version": [
-    "3.26.2"
+    "3.26.2",
+    "3.28"
   ]
 }
