@@ -63,8 +63,6 @@ class BluetoothDevice {
 
 class BluetoothQuickConnect {
     constructor(bluetooth, settings) {
-        this._model = bluetooth._model;
-        this._getDefaultAdapter = bluetooth._getDefaultAdapter;
         this._menu = bluetooth._item.menu;
         this._proxy = bluetooth._proxy;
         this._settings = settings;
@@ -73,6 +71,7 @@ class BluetoothQuickConnect {
     }
 
     enable() {
+        this._loadBluetoothModel();
         this._connectSignal(this._menu, 'open-state-changed', (menu, isOpen) => {
             if (isOpen && this._autoPowerOnEnabled())
                 this._proxy.BluetoothAirplaneMode = false;
@@ -84,7 +83,6 @@ class BluetoothQuickConnect {
 
         this._proxy.BluetoothAirplaneMode = false;
         this._idleMonitor();
-
         this._sync();
     }
 
@@ -107,6 +105,23 @@ class BluetoothQuickConnect {
             subject: subject,
             signal_id: signal_id
         });
+    }
+
+    _loadBluetoothModel() {
+        this._client = new GnomeBluetooth.Client();
+        this._model = this._client.get_model();
+    }
+
+    _getDefaultAdapter() {
+        let [ret, iter] = this._model.get_iter_first();
+        while (ret) {
+            let isDefault = this._model.get_value(iter, GnomeBluetooth.Column.DEFAULT);
+            let isPowered = this._model.get_value(iter, GnomeBluetooth.Column.POWERED);
+            if (isDefault && isPowered)
+                return iter;
+            ret = this._model.iter_next(iter);
+        }
+        return null;
     }
 
     _getDevices() {
