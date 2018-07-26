@@ -1,8 +1,12 @@
 const Main = imports.ui.main;
 const GnomeBluetooth = imports.gi.GnomeBluetooth;
 const PopupMenu = imports.ui.popupMenu;
-const GLib = imports.gi.GLib;
 const Util = imports.misc.util;
+const GLib = imports.gi.GLib;
+
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
+const Convenience = Me.imports.convenience;
 
 class BluetoothDevice {
     constructor(model, device) {
@@ -58,25 +62,49 @@ class BluetoothDevice {
 }
 
 class BluetoothQuickConnect {
-    constructor(bluetooth) {
+    constructor(bluetooth, settings) {
         this._menu = bluetooth._item.menu;
+        this._proxy = bluetooth._proxy;
+        this._settings = settings;
 
         this._signals = [];
     }
 
     enable() {
         this._loadBluetoothModel();
-        let signal = this._menu.connect('open-state-changed', (menu, isOpen) => {
-            if (isOpen)
-                this._sync();
+        this._connectSignal(this._menu, 'open-state-changed', (menu, isOpen) => {
+            if (isOpen && this._autoPowerOnEnabled())
+                this._proxy.BluetoothAirplaneMode = false;
         });
+        
+        this._connectSignal(this._model, 'row-changed', () => this._sync());
+        this._connectSignal(this._model, 'row-deleted', () => this._sync());
+        this._connectSignal(this._model, 'row-inserted', () => this._sync());
 
-        this._signals.push(signal);
+        this._proxy.BluetoothAirplaneMode = false;
+        this._idleMonitor();
         this._sync();
     }
 
     disable() {
         this._destroy();
+    }
+
+    _idleMonitor() {
+        this._idleMonitorId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 60 * 1000, () => {
+            if (this._autoPowerOffEnabled() && this._getConnectedDevices().length === 0)
+                this._proxy.BluetoothAirplaneMode = true;
+
+            return true;
+        });
+    }
+
+    _connectSignal(subject, signal_name, method) {
+        let signal_id = subject.connect(signal_name, method);
+        this._signals.push({
+            subject: subject,
+            signal_id: signal_id
+        });
     }
 
     _loadBluetoothModel() {
@@ -96,23 +124,32 @@ class BluetoothQuickConnect {
         return null;
     }
 
-    _getPairedDevices() {
+    _getDevices() {
         let adapter = this._getDefaultAdapter();
         if (!adapter)
             return [];
 
-        let pairedDevices = [];
+        let devices = [];
 
         let [ret, iter] = this._model.iter_children(adapter);
         while (ret) {
-            let bluetoothDevice = new BluetoothDevice(this._model, iter);
-            if (bluetoothDevice.isPaired || bluetoothDevice.isConnected)
-                pairedDevices.push(bluetoothDevice);
-
+            devices.push(new BluetoothDevice(this._model, iter));
             ret = this._model.iter_next(iter);
         }
 
-        return pairedDevices;
+        return devices;
+    }
+
+    _getPairedDevices() {
+        return this._getDevices().filter((device) => {
+            return device.isPaired || device.isConnected;
+        });
+    }
+
+    _getConnectedDevices() {
+        return this._getDevices().filter((device) => {
+            return device.isConnected;
+        });
     }
 
     _sync() {
@@ -136,10 +173,25 @@ class BluetoothQuickConnect {
 
     _destroy() {
         this._signals.forEach((signal) => {
-            this._menu.disconnect(signal);
+            signal.subject.disconnect(signal.signal_id);
         });
         this._signals = [];
         this._removeDevicesFromMenu();
+
+        if (this._idleMonitorId)
+            GLib.Source.remove(this._idleMonitorId);
+    }
+
+    _autoPowerOnEnabled() {
+        return this._settings.get_boolean('bluetooth-auto-power-on');
+    }
+
+    _autoPowerOffEnabled() {
+        return this._settings.get_boolean('bluetooth-auto-power-off');
+    }
+
+    _autoPowerOffCheckingInterval() {
+        return this._settings.get_int('bluetooth-auto-power-off-interval');
     }
 }
 
@@ -147,7 +199,8 @@ let bluetoothQuickConnect = null;
 
 function init() {
     let bluetooth = Main.panel.statusArea.aggregateMenu._bluetooth;
-    bluetoothQuickConnect = new BluetoothQuickConnect(bluetooth);
+    let settings = Convenience.getSettings();
+    bluetoothQuickConnect = new BluetoothQuickConnect(bluetooth, settings);
 }
 
 function enable() {

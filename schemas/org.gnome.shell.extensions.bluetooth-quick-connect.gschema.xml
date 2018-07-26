@@ -1,0 +1,17 @@
+<schemalist gettext-domain="bluetooth-quick-connect">
+  <schema id="org.gnome.shell.extensions.bluetooth-quick-connect"
+          path="/org/gnome/shell/extensions/bluetooth-quick-connect/">
+    <key name="bluetooth-auto-power-on" type="b">
+      <default>false</default>
+      <summary>Automatically powers on bluetooth when open menu</summary>
+    </key>
+    <key name="bluetooth-auto-power-off" type="b">
+      <default>false</default>
+      <summary>Automatically powers off bluetooth if idle</summary>
+    </key>
+    <key name="bluetooth-auto-power-off-interval" type="i">
+      <default>60</default>
+      <summary>Checking interval for power off idling bluetooth</summary>
+    </key>
+  </schema>
+</schemalist>
