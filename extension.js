@@ -51,13 +51,16 @@ class BluetoothDevice {
     }
 
     _disconnect() {
-        let command = `echo -e "disconnect ${this.mac}\\n" | bluetoothctl`;
-        Util.spawn(['/bin/bash', '-c', command]);
+        this._call_bluetoothctl(`disconnect ${this.mac}`)
     }
 
     _connect() {
-        let command = `echo -e "connect ${this.mac}\\n" | bluetoothctl`;
-        Util.spawn(['/bin/bash', '-c', command]);
+        this._call_bluetoothctl(`connect ${this.mac}`)
+    }
+
+    _call_bluetoothctl(command) {
+        let btctl_command = `echo -e "${command}\\n" | bluetoothctl`;
+        Util.spawn(['/bin/bash', '-c', btctl_command]);
     }
 }
 
@@ -90,8 +93,16 @@ class BluetoothQuickConnect {
         this._destroy();
     }
 
+    test() {
+        try {
+            GLib.spawn_command_line_sync("bluetoothctl --version");
+        } catch(error) {
+            Main.notifyError(`Bluetooth quick connect: error trying to execute "bluetoothctl"`);
+        }
+    }
+
     _idleMonitor() {
-        this._idleMonitorId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 60 * 1000, () => {
+        this._idleMonitorId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, this._autoPowerOffCheckingInterval() * 1000, () => {
             if (this._autoPowerOffEnabled() && this._getConnectedDevices().length === 0)
                 this._proxy.BluetoothAirplaneMode = true;
 
@@ -204,6 +215,7 @@ function init() {
 }
 
 function enable() {
+    bluetoothQuickConnect.test();
     bluetoothQuickConnect.enable();
 }
 
