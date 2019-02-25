@@ -1,3 +1,7 @@
+// Copyright 2018 Bartosz Jaroszewski
+// SPDX-License-Identifier: GPL-2.0-or-later
+// (see extension.js for details)
+
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 
