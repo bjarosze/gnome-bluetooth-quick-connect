@@ -76,7 +76,7 @@ class BluetoothDevice {
 
     _call_bluetoothctl(command) {
         let btctl_command = `echo -e "${command}\\n" | bluetoothctl`;
-        Util.spawn(['/bin/bash', '-c', btctl_command]);
+        Util.spawn(['/usr/bin/env', 'bash', '-c', btctl_command]);
     }
 }
 
