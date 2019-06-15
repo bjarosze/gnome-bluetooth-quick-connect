@@ -95,14 +95,16 @@ class BluetoothQuickConnect {
             if (isOpen && this._autoPowerOnEnabled())
                 this._proxy.BluetoothAirplaneMode = false;
         });
-        
+
         this._connectSignal(this._model, 'row-changed', () => this._sync());
         this._connectSignal(this._model, 'row-deleted', () => this._sync());
         this._connectSignal(this._model, 'row-inserted', () => this._sync());
 
+        prevAir = this._proxy.BluetootAirplaneMode;
         this._proxy.BluetoothAirplaneMode = false;
         this._idleMonitor();
         this._sync();
+        this._proxy.BluetoothAirplaneMode = prevAir;
     }
 
     disable() {
