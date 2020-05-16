@@ -103,8 +103,14 @@ class BluetoothQuickConnect {
     enable() {
         this._loadBluetoothModel();
         this._connectSignal(this._menu, 'open-state-changed', (menu, isOpen) => {
+            if (isOpen)
+                this._disconnectIdleMonitor()
+            else
+                this._connectIdleMonitor();
+
             if (isOpen && this._autoPowerOnEnabled())
                 this._proxy.BluetoothAirplaneMode = false;
+
             this._sync();
         });
 
@@ -112,7 +118,7 @@ class BluetoothQuickConnect {
         this._connectSignal(this._model, 'row-deleted', () => this._sync());
         this._connectSignal(this._model, 'row-inserted', () => this._sync());
 
-        this._idleMonitor();
+        this._connectIdleMonitor();
         if (!this._proxy.BluetoothAirplaneMode) {
             this._sync();
         }
@@ -130,13 +136,22 @@ class BluetoothQuickConnect {
         }
     }
 
-    _idleMonitor() {
+    _connectIdleMonitor() {
+        if (this._idleMonitorId) return;
+
         this._idleMonitorId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, this._autoPowerOffCheckingInterval() * 1000, () => {
             if (this._autoPowerOffEnabled() && this._getConnectedDevices().length === 0)
                 this._proxy.BluetoothAirplaneMode = true;
 
             return true;
         });
+    }
+
+    _disconnectIdleMonitor() {
+        if (!this._idleMonitorId) return;
+
+        GLib.Source.remove(this._idleMonitorId);
+        this._idleMonitorId = null;
     }
 
     _connectSignal(subject, signal_name, method) {
@@ -218,9 +233,7 @@ class BluetoothQuickConnect {
         });
         this._signals = [];
         this._removeDevicesFromMenu();
-
-        if (this._idleMonitorId)
-            GLib.Source.remove(this._idleMonitorId);
+        this._disconnectIdleMonitor();
     }
 
     _autoPowerOnEnabled() {
