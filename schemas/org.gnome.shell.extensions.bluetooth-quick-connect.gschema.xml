@@ -18,5 +18,9 @@ SPDX-License-Identifier: GPL-2.0-or-later
       <default>60</default>
       <summary>Checking interval for power off idling bluetooth</summary>
     </key>
+    <key name="keep-menu-on-toggle" type="b">
+      <default>false</default>
+      <summary>Keep the menu open after toggling the connection</summary>
+    </key>
   </schema>
 </schemalist>

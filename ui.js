@@ -27,6 +27,7 @@ var PopupSwitchWithButtonMenuItem = GObject.registerClass(
 
             this.label.x_expand = true;
             this._statusBin.x_expand = false;
+            this.isEmitActivatedEnabled = true;
 
             if (icon) {
                 this.insert_child_at_index(
@@ -71,9 +72,25 @@ var PopupSwitchWithButtonMenuItem = GObject.registerClass(
 
             button.connect('clicked', () => {
                 this.emit('clicked');
+                if (this.isEmitActivatedEnabled)
+                    this.emit('activate', Clutter.get_current_event());
             });
 
             return button;
+        }
+
+        activate(event) {
+            if (this._switch.mapped)
+                this.toggle();
+
+            // we allow pressing space to toggle the switch
+            // without closing the menu
+            if (event.type() == Clutter.EventType.KEY_PRESS &&
+                event.get_key_symbol() == Clutter.KEY_space)
+                return;
+
+            if (this.isEmitActivatedEnabled)
+                this.emit('activate', event);
         }
     }
 );

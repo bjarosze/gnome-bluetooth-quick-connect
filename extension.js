@@ -105,6 +105,7 @@ class BluetoothQuickConnect {
         this._connectSignal(this._menu, 'open-state-changed', (menu, isOpen) => {
             if (isOpen && this._autoPowerOnEnabled())
                 this._proxy.BluetoothAirplaneMode = false;
+            this._sync();
         });
 
         this._connectSignal(this._model, 'row-changed', () => this._sync());
@@ -198,6 +199,7 @@ class BluetoothQuickConnect {
 
     _addDevicesToMenu() {
         this._getPairedDevices().forEach((device) => {
+            device.item.isEmitActivatedEnabled = !this._keepMenuOnToggle();
             this._menu.addMenuItem(device.item, 1);
         });
     }
@@ -231,6 +233,10 @@ class BluetoothQuickConnect {
 
     _autoPowerOffCheckingInterval() {
         return this._settings.get_int('bluetooth-auto-power-off-interval');
+    }
+
+    _keepMenuOnToggle() {
+        return this._settings.get_boolean('keep-menu-on-toggle');
     }
 }
 

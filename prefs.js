@@ -64,6 +64,9 @@ class SettingsBuilder {
 
         let autoPowerOffInterval = this._builder.get_object('auto_power_off_interval');
         this._settings.bind('bluetooth-auto-power-off-interval', autoPowerOffInterval, 'value', Gio.SettingsBindFlags.DEFAULT);
+
+        let keepMenuOnToggle = this._builder.get_object('keep_menu_on_toggle');
+        this._settings.bind('keep-menu-on-toggle', keepMenuOnToggle, 'active', Gio.SettingsBindFlags.DEFAULT);
     }
 
 }
