@@ -16,13 +16,13 @@
 
 const Main = imports.ui.main;
 const GnomeBluetooth = imports.gi.GnomeBluetooth;
-const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 const GLib = imports.gi.GLib;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
+const UiExtension = Me.imports.ui;
 
 class BluetoothDevice {
     constructor(model, device) {
@@ -56,7 +56,11 @@ class BluetoothDevice {
     }
 
     _buildMenuItem() {
-        this._item = new PopupMenu.PopupSwitchMenuItem(this.name, this.isConnected);
+        this._item = new UiExtension.PopupSwitchWithButtonMenuItem(
+            this.name,
+            this.isConnected,
+            this.isConnected && 'view-refresh'
+        );
         this._item.isDeviceSwitcher = true;
         this._item.connect('toggled', (item, state) => {
             if (state)
@@ -64,19 +68,26 @@ class BluetoothDevice {
             else
                 this._disconnect();
         });
+
+        this._item.connect('clicked', () => {
+            this._reconnect()
+        });
     }
 
     _disconnect() {
-        this._call_bluetoothctl(`disconnect ${this.mac}`)
+        this._call_cmd(`bluetoothctl -- disconnect ${this.mac}`)
     }
 
     _connect() {
-        this._call_bluetoothctl(`connect ${this.mac}`)
+        this._call_cmd(`bluetoothctl -- connect ${this.mac}`)
     }
 
-    _call_bluetoothctl(command) {
-        let btctl_command = `echo -e "${command}\\n" | bluetoothctl`;
-        Util.spawn(['/usr/bin/env', 'bash', '-c', btctl_command]);
+    _reconnect() {
+        this._call_cmd(`bluetoothctl -- disconnect ${this.mac} && bluetoothctl -- connect ${this.mac}`)
+    }
+
+    _call_cmd(command) {
+        Util.spawn(['/usr/bin/env', 'bash', '-c', command]);
     }
 }
 
@@ -113,8 +124,8 @@ class BluetoothQuickConnect {
     test() {
         try {
             GLib.spawn_command_line_sync("bluetoothctl --version");
-        } catch(error) {
-            Main.notifyError(`Bluetooth quick connect: error trying to execute "bluetoothctl"`);
+        } catch (error) {
+            Main.notifyError(_('Bluetooth quick connect'),  _(`Error trying to execute "bluetoothctl"`));
         }
     }
 

@@ -17,3 +17,14 @@ make
 rm -r ~/.local/share/gnome-shell/extensions/bluetooth-quick-connect@bjarosze.gmail.com
 cp -r gnome-bluetooth-quick-connect ~/.local/share/gnome-shell/extensions/bluetooth-quick-connect@bjarosze.gmail.com
 ```
+
+## Troubleshooting
+
+### Reconnect does not work
+
+Not sure why, but sometimes bluetoothctl does not want to connect 
+device after it was disconnected. Reinstalling bluez helped on my ubuntu.
+```
+$ sudo apt purge bluez gnome-bluetooth pulseaudio-module-bluetooth
+$ sudo apt install bluez gnome-bluetooth pulseaudio-module-bluetooth
+```
