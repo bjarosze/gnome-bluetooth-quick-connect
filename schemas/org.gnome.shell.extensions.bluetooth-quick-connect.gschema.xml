@@ -22,5 +22,9 @@ SPDX-License-Identifier: GPL-2.0-or-later
       <default>false</default>
       <summary>Keep the menu open after toggling the connection</summary>
     </key>
+    <key name="refresh-button-on" type="b">
+      <default>false</default>
+      <summary>Show reconnect button</summary>
+    </key>
   </schema>
 </schemalist>

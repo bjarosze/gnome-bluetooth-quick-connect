@@ -196,6 +196,9 @@ class BluetoothQuickConnect {
     _addDevicesToMenu() {
         this._getPairedDevices().forEach((device) => {
             device.item.isEmitActivatedEnabled = !this._keepMenuOnToggle();
+            if (!this._showRefreshButton())
+                device.item.hideRefreshButton();
+
             this._menu.addMenuItem(device.item, 1);
         });
     }
@@ -231,6 +234,10 @@ class BluetoothQuickConnect {
 
     _keepMenuOnToggle() {
         return this._settings.get_boolean('keep-menu-on-toggle');
+    }
+
+    _showRefreshButton() {
+        return this._settings.get_boolean('refresh-button-on');
     }
 }
 

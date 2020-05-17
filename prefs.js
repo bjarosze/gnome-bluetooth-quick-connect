@@ -65,8 +65,11 @@ class SettingsBuilder {
         let autoPowerOffInterval = this._builder.get_object('auto_power_off_interval');
         this._settings.bind('bluetooth-auto-power-off-interval', autoPowerOffInterval, 'value', Gio.SettingsBindFlags.DEFAULT);
 
-        let keepMenuOnToggle = this._builder.get_object('keep_menu_on_toggle');
-        this._settings.bind('keep-menu-on-toggle', keepMenuOnToggle, 'active', Gio.SettingsBindFlags.DEFAULT);
+        let keepMenuOnToggleSwitch = this._builder.get_object('keep_menu_on_toggle');
+        this._settings.bind('keep-menu-on-toggle', keepMenuOnToggleSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        let refreshButtonOnSwitch = this._builder.get_object('refresh_button_on');
+        this._settings.bind('refresh-button-on', refreshButtonOnSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
     }
 
 }

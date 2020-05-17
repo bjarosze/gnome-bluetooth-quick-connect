@@ -120,6 +120,10 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this._pending();
         }
 
+        hideRefreshButton() {
+            this._refreshButton.hide();
+        }
+
         _pending() {
             this._refreshButton.hide();
             this._switch.hide();
