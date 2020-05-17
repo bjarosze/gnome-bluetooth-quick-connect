@@ -50,39 +50,20 @@ class BluetoothDevice {
 
     get item() {
         if (!this._item)
-            this._buildMenuItem();
+            this._item = new UiExtension.PopupBluetoothDeviceMenuItem(this);
 
         return this._item;
     }
 
-    _buildMenuItem() {
-        this._item = new UiExtension.PopupSwitchWithButtonMenuItem(
-            this.name,
-            this.isConnected,
-            this.isConnected && 'view-refresh'
-        );
-        this._item.isDeviceSwitcher = true;
-        this._item.connect('toggled', (item, state) => {
-            if (state)
-                this._connect();
-            else
-                this._disconnect();
-        });
-
-        this._item.connect('clicked', () => {
-            this._reconnect()
-        });
-    }
-
-    _disconnect() {
+    disconnect() {
         this._call_cmd(`bluetoothctl -- disconnect ${this.mac}`)
     }
 
-    _connect() {
+    connect() {
         this._call_cmd(`bluetoothctl -- connect ${this.mac}`)
     }
 
-    _reconnect() {
+    reconnect() {
         this._call_cmd(`bluetoothctl -- disconnect ${this.mac} && bluetoothctl -- connect ${this.mac}`)
     }
 
@@ -221,7 +202,7 @@ class BluetoothQuickConnect {
 
     _removeDevicesFromMenu() {
         this._menu._getMenuItems().forEach((item) => {
-            if (item.isDeviceSwitcher) {
+            if (item.isBluetoothDeviceSwitcher) {
                 item.destroy();
             }
         });

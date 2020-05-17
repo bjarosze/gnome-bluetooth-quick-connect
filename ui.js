@@ -19,28 +19,31 @@ const {Atk, Clutter, Gio, GObject, Graphene, Shell, St} = imports.gi;
 const Tweener = imports.ui.tweener;
 const PopupMenu = imports.ui.popupMenu;
 
-var PopupSwitchWithButtonMenuItem = GObject.registerClass(
-    {Signals: {'clicked': {}}},
+var PopupBluetoothDeviceMenuItem = GObject.registerClass(
     class PopupSwitchWithButtonMenuItem extends PopupMenu.PopupSwitchMenuItem {
-        _init(text, active, icon, params) {
-            super._init(text, active, params);
+        _init(bluetoothDevice, params) {
+            super._init(bluetoothDevice.name, bluetoothDevice.isConnected, params);
+
+            this._bluetoothDevice = bluetoothDevice
+            this.isBluetoothDeviceSwitcher = true;
+            this.isEmitActivatedEnabled = true;
 
             this.label.x_expand = true;
             this._statusBin.x_expand = false;
-            this.isEmitActivatedEnabled = true;
 
-            if (icon) {
-                this.insert_child_at_index(
-                    this.create_button(icon),
-                    this.get_n_children() - 1
-                );
-            }
+            this._refreshButton = this._buildRefreshButton();
+            this._pendingLabel = this._buildPendingLabel();
+            this._connectToggledEvent();
+
+            this.insert_child_at_index(this._refreshButton, this.get_n_children() - 1);
+            this.add_child(this._pendingLabel);
         }
 
-        create_button(iconName) {
+        _buildRefreshButton() {
             let icon = new St.Icon({
-                icon_name: iconName,
+                icon_name: 'view-refresh',
                 style_class: 'popup-menu-icon',
+                opacity: 155
             });
 
             let button = new St.Button({
@@ -51,8 +54,7 @@ var PopupSwitchWithButtonMenuItem = GObject.registerClass(
             button.connect("enter-event", (widget) => {
                 Tweener.addTween(
                     widget.child, {
-                        scale_x: 1.1,
-                        scale_y: 1.1,
+                        opacity: 255,
                         time: 0.05,
                         transition: 'linear'
                     }
@@ -62,8 +64,7 @@ var PopupSwitchWithButtonMenuItem = GObject.registerClass(
             button.connect("leave-event", (widget) => {
                 Tweener.addTween(
                     widget.child, {
-                        scale_x: 1,
-                        scale_y: 1,
+                        opacity: 155,
                         time: 0.05,
                         transition: 'linear'
                     }
@@ -71,12 +72,33 @@ var PopupSwitchWithButtonMenuItem = GObject.registerClass(
             });
 
             button.connect('clicked', () => {
-                this.emit('clicked');
+                this._pending();
+                this._bluetoothDevice.reconnect();
+
                 if (this.isEmitActivatedEnabled)
                     this.emit('activate', Clutter.get_current_event());
             });
 
+            if (!this._bluetoothDevice.isConnected)
+                button.hide();
+
             return button;
+        }
+
+        _buildPendingLabel() {
+            let label = new St.Label({ text: _('Wait') });
+            label.hide();
+
+            return label;
+        }
+
+        _connectToggledEvent() {
+            this.connect('toggled', (item, state) => {
+                if (state)
+                    this._bluetoothDevice.connect();
+                else
+                    this._bluetoothDevice.disconnect();
+            });
         }
 
         activate(event) {
@@ -91,6 +113,18 @@ var PopupSwitchWithButtonMenuItem = GObject.registerClass(
 
             if (this.isEmitActivatedEnabled)
                 this.emit('activate', event);
+        }
+
+        toggle() {
+            super.toggle();
+            this._pending();
+        }
+
+        _pending() {
+            this._refreshButton.hide();
+            this._switch.hide();
+            this._pendingLabel.show();
+            this.reactive = false;
         }
     }
 );
