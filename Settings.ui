@@ -262,7 +262,7 @@ SPDX-License-Identifier: GPL-2.0-or-later
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="hexpand">True</property>
-                        <property name="label" translatable="yes">Keep the menu open after toggling the connection</property>
+                        <property name="label" translatable="yes">Keep the menu open after toggling the connection (restart required)</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -304,7 +304,7 @@ SPDX-License-Identifier: GPL-2.0-or-later
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="hexpand">True</property>
-                        <property name="label" translatable="yes">Show reconnect button</property>
+                        <property name="label" translatable="yes">Show reconnect button (restart required)</property>
                         <property name="xalign">0</property>
                       </object>
                       <packing>
@@ -316,7 +316,48 @@ SPDX-License-Identifier: GPL-2.0-or-later
                 </child>
               </object>
             </child>
-
+            <child>
+              <object class="GtkListBoxRow">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <child>
+                  <object class="GtkGrid">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_left">12</property>
+                    <property name="margin_right">12</property>
+                    <property name="margin_top">12</property>
+                    <property name="margin_bottom">12</property>
+                    <property name="column_spacing">32</property>
+                    <child>
+                      <object class="GtkSwitch" id="debug_mode_on">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="halign">end</property>
+                        <property name="valign">center</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="debug_mode_on_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="hexpand">True</property>
+                        <property name="label" translatable="yes">Debug mode (restart required)</property>
+                        <property name="xalign">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">0</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
         <child type="label_item">

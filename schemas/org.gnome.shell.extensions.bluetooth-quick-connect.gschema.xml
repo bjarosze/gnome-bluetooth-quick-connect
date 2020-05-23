@@ -26,5 +26,9 @@ SPDX-License-Identifier: GPL-2.0-or-later
       <default>false</default>
       <summary>Show reconnect button</summary>
     </key>
+    <key name="debug-mode-on" type="b">
+      <default>false</default>
+      <summary>Debug mode</summary>
+    </key>
   </schema>
 </schemalist>

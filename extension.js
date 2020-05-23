@@ -15,113 +15,120 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 const Main = imports.ui.main;
-const GnomeBluetooth = imports.gi.GnomeBluetooth;
-const Util = imports.misc.util;
 const GLib = imports.gi.GLib;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Convenience = Me.imports.convenience;
 const UiExtension = Me.imports.ui;
+const Bluetooth = Me.imports.bluetooth;
+const Utils = Me.imports.utils;
+const Settings = Me.imports.settings.Settings;
 
-class BluetoothDevice {
-    constructor(model, device) {
-        this._name = model.get_value(device, GnomeBluetooth.Column.NAME);
-        this._isConnected = model.get_value(device, GnomeBluetooth.Column.CONNECTED);
-        this._isPaired = model.get_value(device, GnomeBluetooth.Column.PAIRED);
-        this._mac = model.get_value(device, GnomeBluetooth.Column.ADDRESS);
-    }
-
-    get name() {
-        return this._name;
-    }
-
-    get isConnected() {
-        return this._isConnected;
-    }
-
-    get isPaired() {
-        return this._isPaired;
-    }
-
-    get mac() {
-        return this._mac;
-    }
-
-    get item() {
-        if (!this._item)
-            this._item = new UiExtension.PopupBluetoothDeviceMenuItem(this);
-
-        return this._item;
-    }
-
-    disconnect() {
-        this._call_cmd(`bluetoothctl -- disconnect ${this.mac}`)
-    }
-
-    connect() {
-        this._call_cmd(`bluetoothctl -- connect ${this.mac}`)
-    }
-
-    reconnect() {
-        this._call_cmd(`bluetoothctl -- disconnect ${this.mac} && bluetoothctl -- connect ${this.mac}`)
-    }
-
-    _call_cmd(command) {
-        Util.spawn(['/usr/bin/env', 'bash', '-c', command]);
-    }
-}
 
 class BluetoothQuickConnect {
     constructor(bluetooth, settings) {
+        this._logger = new Utils.Logger(settings);
+        this._logger.info('Initializing extension');
         this._menu = bluetooth._item.menu;
         this._proxy = bluetooth._proxy;
-        this._settings = settings;
+        this._controller = new Bluetooth.BluetoothController();
+        this._settings = settings
 
-        this._signals = [];
+        this._items = {};
     }
 
     enable() {
-        this._loadBluetoothModel();
+        this._logger.info('Enabling extension');
+        this._controller.enable();
+        this._refresh();
+        this._connectControllerSignals();
+        this._connectIdleMonitor();
+        this._connectMenuSignals();
+    }
+
+    _connectMenuSignals() {
         this._connectSignal(this._menu, 'open-state-changed', (menu, isOpen) => {
+            this._logger.info(`Menu toggled: ${isOpen}`);
             if (isOpen)
                 this._disconnectIdleMonitor()
             else
                 this._connectIdleMonitor();
 
-            if (isOpen && this._autoPowerOnEnabled())
+            if (isOpen && this._settings.isAutoPowerOnEnabled() && this._proxy.BluetoothAirplaneMode) {
+                this._logger.info('Disabling airplane mode');
                 this._proxy.BluetoothAirplaneMode = false;
-
-            this._sync();
+            }
         });
-
-        this._connectSignal(this._model, 'row-changed', () => this._sync());
-        this._connectSignal(this._model, 'row-deleted', () => this._sync());
-        this._connectSignal(this._model, 'row-inserted', () => this._sync());
-
-        this._connectIdleMonitor();
-        if (!this._proxy.BluetoothAirplaneMode) {
-            this._sync();
-        }
     }
 
     disable() {
+        this._logger.info('Disabling extension');
         this._destroy();
     }
 
     test() {
         try {
+            this._logger.info('Testing bluetoothctl');
             GLib.spawn_command_line_sync("bluetoothctl --version");
+            this._logger.info('Test succeeded');
         } catch (error) {
-            Main.notifyError(_('Bluetooth quick connect'),  _(`Error trying to execute "bluetoothctl"`));
+            Main.notifyError(_('Bluetooth quick connect'), _(`Error trying to execute "bluetoothctl"`));
+            this._logger.info('Test failed');
         }
+    }
+
+    _connectControllerSignals() {
+        this._logger.info('Connecting bluetooth controller signals');
+
+        this._connectSignal(this._controller, 'device-inserted', (ctrl, device) => {
+            this._logger.info(`Device inserted event: ${device.name}`);
+            this._addMenuItem(device);
+        });
+        this._connectSignal(this._controller, 'device-changed', (ctrl, device) => {
+            this._logger.info(`Device changed event: ${device.name}`);
+            if (device.isDefault)
+                this._refresh();
+            else
+                this._syncMenuItem(device);
+        });
+        this._connectSignal(this._controller, 'device-deleted', () => {
+            this._logger.info(`Device deleted event`);
+            this._refresh();
+        });
+
+        this._connectSignal(Main.sessionMode, 'updated', () => {
+            this._refresh()
+        });
+    }
+
+    _syncMenuItem(device) {
+        this._logger.info(`Synchronizing device menu item: ${device.name}`);
+        let item = this._items[device.mac] || this._addMenuItem(device);
+        item.sync(device);
+    }
+
+    _addMenuItem(device) {
+        this._logger.info(`Adding device menu item: ${device.name}`);
+        let menuItem = new UiExtension.PopupBluetoothDeviceMenuItem(
+            device,
+            {
+                showRefreshButton: this._settings.isShowRefreshButtonEnabled(),
+                closeMenuOnAction: !this._settings.isKeepMenuOnToggleEnabled()
+            }
+        );
+        this._items[device.mac] = menuItem;
+        this._menu.addMenuItem(menuItem, 1);
+
+        return menuItem;
     }
 
     _connectIdleMonitor() {
         if (this._idleMonitorId) return;
 
-        this._idleMonitorId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, this._autoPowerOffCheckingInterval() * 1000, () => {
-            if (this._autoPowerOffEnabled() && this._getConnectedDevices().length === 0)
+        this._logger.info('Connecting idle monitor');
+
+        this._idleMonitorId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, this._settings.autoPowerOffCheckingInterval() * 1000, () => {
+            if (this._settings.isAutoPowerOffEnabled() && this._controller.getConnectedDevices().length === 0)
                 this._proxy.BluetoothAirplaneMode = true;
 
             return true;
@@ -130,6 +137,8 @@ class BluetoothQuickConnect {
 
     _disconnectIdleMonitor() {
         if (!this._idleMonitorId) return;
+
+        this._logger.info('Disconnecting idle monitor');
 
         GLib.Source.remove(this._idleMonitorId);
         this._idleMonitorId = null;
@@ -143,109 +152,44 @@ class BluetoothQuickConnect {
         });
     }
 
-    _loadBluetoothModel() {
-        this._client = new GnomeBluetooth.Client();
-        this._model = this._client.get_model();
-    }
-
-    _getDefaultAdapter() {
-        let [ret, iter] = this._model.get_iter_first();
-        while (ret) {
-            let isDefault = this._model.get_value(iter, GnomeBluetooth.Column.DEFAULT);
-            let isPowered = this._model.get_value(iter, GnomeBluetooth.Column.POWERED);
-            if (isDefault && isPowered)
-                return iter;
-            ret = this._model.iter_next(iter);
-        }
-        return null;
-    }
-
-    _getDevices() {
-        let adapter = this._getDefaultAdapter();
-        if (!adapter)
-            return [];
-
-        let devices = [];
-
-        let [ret, iter] = this._model.iter_children(adapter);
-        while (ret) {
-            devices.push(new BluetoothDevice(this._model, iter));
-            ret = this._model.iter_next(iter);
-        }
-
-        return devices;
-    }
-
-    _getPairedDevices() {
-        return this._getDevices().filter((device) => {
-            return device.isPaired || device.isConnected;
-        });
-    }
-
-    _getConnectedDevices() {
-        return this._getDevices().filter((device) => {
-            return device.isConnected;
-        });
-    }
-
-    _sync() {
+    _refresh() {
         this._removeDevicesFromMenu();
         this._addDevicesToMenu();
+
+        this._logger.info('Refreshing devices list');
     }
 
     _addDevicesToMenu() {
-        this._getPairedDevices().forEach((device) => {
-            device.item.isEmitActivatedEnabled = !this._keepMenuOnToggle();
-            if (!this._showRefreshButton())
-                device.item.hideRefreshButton();
-
-            this._menu.addMenuItem(device.item, 1);
+        this._controller.getDevices().forEach((device) => {
+            this._addMenuItem(device);
         });
     }
 
     _removeDevicesFromMenu() {
-        this._menu._getMenuItems().forEach((item) => {
-            if (item.isBluetoothDeviceSwitcher) {
-                item.destroy();
-            }
+        Object.values(this._items).forEach((item) => {
+            item.destroy();
         });
+
+        this._items = {};
     }
 
     _destroy() {
-        this._signals.forEach((signal) => {
-            signal.subject.disconnect(signal.signal_id);
-        });
-        this._signals = [];
+        this._disconnectSignals();
         this._removeDevicesFromMenu();
         this._disconnectIdleMonitor();
-    }
-
-    _autoPowerOnEnabled() {
-        return this._settings.get_boolean('bluetooth-auto-power-on');
-    }
-
-    _autoPowerOffEnabled() {
-        return this._settings.get_boolean('bluetooth-auto-power-off');
-    }
-
-    _autoPowerOffCheckingInterval() {
-        return this._settings.get_int('bluetooth-auto-power-off-interval');
-    }
-
-    _keepMenuOnToggle() {
-        return this._settings.get_boolean('keep-menu-on-toggle');
-    }
-
-    _showRefreshButton() {
-        return this._settings.get_boolean('refresh-button-on');
+        if (this._controller)
+            this._controller.destroy();
     }
 }
+
+Utils.addSignalsHelperMethods(BluetoothQuickConnect.prototype);
+
 
 let bluetoothQuickConnect = null;
 
 function init() {
     let bluetooth = Main.panel.statusArea.aggregateMenu._bluetooth;
-    let settings = Convenience.getSettings();
+    let settings = new Settings();
     bluetoothQuickConnect = new BluetoothQuickConnect(bluetooth, settings);
 }
 

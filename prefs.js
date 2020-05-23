@@ -10,13 +10,12 @@ const _ = Gettext.gettext;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Convenience = Me.imports.convenience;
+const Settings = Me.imports.settings.Settings;
 
 
 class SettingsBuilder {
-
     constructor() {
-        this._settings = new Convenience.getSettings();
+        this._settings = new Settings().settings;
         this._builder = new Gtk.Builder();
     }
 
@@ -32,10 +31,12 @@ class SettingsBuilder {
 
 
         this._builder.get_object('auto_power_off_settings_button').connect('clicked', () => {
-            let dialog = new Gtk.Dialog({ title: 'Auto power off settings',
+            let dialog = new Gtk.Dialog({
+                title: 'Auto power off settings',
                 transient_for: this._widget.get_toplevel(),
                 use_header_bar: true,
-                modal: true });
+                modal: true
+            });
 
 
             let box = this._builder.get_object('auto_power_off_settings');
@@ -70,12 +71,14 @@ class SettingsBuilder {
 
         let refreshButtonOnSwitch = this._builder.get_object('refresh_button_on');
         this._settings.bind('refresh-button-on', refreshButtonOnSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        let debugModeOnSwitch = this._builder.get_object('debug_mode_on');
+        this._settings.bind('debug-mode-on', debugModeOnSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
     }
 
 }
 
 function init() {
-    // Convenience.initTranslations();
 }
 
 function buildPrefsWidget() {

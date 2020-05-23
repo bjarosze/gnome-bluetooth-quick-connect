@@ -1,8 +1,12 @@
 # Bluetooth quick connect
 
 This extension allows paired Bluetooth devices to be connected and
-disconnected via the GNOME system menu, without having to enter the
+disconnected via the GNOME system menu, without need to enter the
 Settings app every time.
+
+# Requirements
+
+ * bluez (on ubuntu: `sudo apt install bluez`)
 
 ## Installation from extensions.gnome.org
 
@@ -20,10 +24,35 @@ cp -r gnome-bluetooth-quick-connect ~/.local/share/gnome-shell/extensions/blueto
 
 ## Troubleshooting
 
-### Reconnect does not work
+### Connecting and disconnecting does not work
+
+This extensions calls `bluetoothctl` under the hood. If something does not work 
+you can try to execute `bluetoothctl` command in terminal and see what is wrong.
+
+#### Paired devices
+```bash
+bluetoothctl -- paired-devices
+```
+
+#### Connecting
+```bash
+bluetoothctl -- connect <mac address>
+```
+
+#### Disconnecting
+```bash
+bluetoothctl -- disconnect <mac address>
+```
+
+#### Reconnecting
+```bash
+bluetoothctl -- disconnect <mac> && bluetoothctl -- connect <mac>
+```
+
+### Reconnecting does not work
 
 Not sure why, but sometimes bluetoothctl does not want to connect 
-device after it was disconnected. Reinstalling bluez helped on my ubuntu.
+device after it was disconnected. Reinstalling bluez and rebooting system helped on my ubuntu.
 ```
 $ sudo apt purge bluez gnome-bluetooth pulseaudio-module-bluetooth
 $ sudo apt install bluez gnome-bluetooth pulseaudio-module-bluetooth

@@ -15,18 +15,24 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-const {Atk, Clutter, Gio, GObject, Graphene, Shell, St} = imports.gi;
+const Clutter = imports.gi.Clutter;
+const GObject = imports.gi.GObject;
+const St = imports.gi.St;
 const Tweener = imports.ui.tweener;
 const PopupMenu = imports.ui.popupMenu;
 
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
+const Utils = Me.imports.utils;
+
 var PopupBluetoothDeviceMenuItem = GObject.registerClass(
     class PopupSwitchWithButtonMenuItem extends PopupMenu.PopupSwitchMenuItem {
-        _init(bluetoothDevice, params) {
-            super._init(bluetoothDevice.name, bluetoothDevice.isConnected, params);
+        _init(device, params) {
+            super._init(device.name, device.isConnected, {});
 
-            this._bluetoothDevice = bluetoothDevice
-            this.isBluetoothDeviceSwitcher = true;
-            this.isEmitActivatedEnabled = true;
+            this._device = device;
+            this._showRefreshButton = params.showRefreshButton;
+            this._closeMenuOnAction = params.closeMenuOnAction;
 
             this.label.x_expand = true;
             this._statusBin.x_expand = false;
@@ -37,6 +43,18 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
             this.insert_child_at_index(this._refreshButton, this.get_n_children() - 1);
             this.add_child(this._pendingLabel);
+
+            this.sync(device);
+        }
+
+        sync(device) {
+            this._device = device;
+            this._switch.state = device.isConnected;
+            this.visible = device.isPaired;
+            if (this._showRefreshButton && device.isConnected)
+                this._refreshButton.show();
+            else
+                this._refreshButton.hide();
         }
 
         _buildRefreshButton() {
@@ -72,21 +90,20 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             });
 
             button.connect('clicked', () => {
-                this._pending();
-                this._bluetoothDevice.reconnect();
+                this._enablePending();
+                this._device.reconnect(() => {
+                    this._disablePending()
+                });
 
-                if (this.isEmitActivatedEnabled)
+                if (this._closeMenuOnAction)
                     this.emit('activate', Clutter.get_current_event());
             });
-
-            if (!this._bluetoothDevice.isConnected)
-                button.hide();
 
             return button;
         }
 
         _buildPendingLabel() {
-            let label = new St.Label({ text: _('Wait') });
+            let label = new St.Label({text: _('Wait')});
             label.hide();
 
             return label;
@@ -95,15 +112,21 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
         _connectToggledEvent() {
             this.connect('toggled', (item, state) => {
                 if (state)
-                    this._bluetoothDevice.connect();
+                    this._device.connect(() => {
+                        this._disablePending()
+                    });
                 else
-                    this._bluetoothDevice.disconnect();
+                    this._device.disconnect(() => {
+                        this._disablePending()
+                    });
             });
         }
 
         activate(event) {
-            if (this._switch.mapped)
+            if (this._switch.mapped) {
                 this.toggle();
+                this._switch.toggle(); // toggle back, state will be updated by signal
+            }
 
             // we allow pressing space to toggle the switch
             // without closing the menu
@@ -111,24 +134,31 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
                 event.get_key_symbol() == Clutter.KEY_space)
                 return;
 
-            if (this.isEmitActivatedEnabled)
+            if (this._closeMenuOnAction)
                 this.emit('activate', event);
         }
 
         toggle() {
             super.toggle();
-            this._pending();
+            this._enablePending();
         }
 
         hideRefreshButton() {
             this._refreshButton.hide();
         }
 
-        _pending() {
-            this._refreshButton.hide();
+        _enablePending() {
+            this._refreshButton.reactive = false;
             this._switch.hide();
             this._pendingLabel.show();
             this.reactive = false;
+        }
+
+        _disablePending() {
+            this._refreshButton.reactive = true;
+            this._switch.show();
+            this._pendingLabel.hide();
+            this.reactive = true;
         }
     }
 );
