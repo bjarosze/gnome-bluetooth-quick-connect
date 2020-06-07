@@ -20,11 +20,7 @@ const GObject = imports.gi.GObject;
 const St = imports.gi.St;
 const Tweener = imports.ui.tweener;
 const PopupMenu = imports.ui.popupMenu;
-
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Utils = Me.imports.utils;
-
+const Config = imports.misc.config;
 
 var PopupBluetoothDeviceMenuItem = GObject.registerClass(
     class PopupSwitchWithButtonMenuItem extends PopupMenu.PopupSwitchMenuItem {
@@ -42,6 +38,11 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this._pendingLabel = this._buildPendingLabel();
             this._connectToggledEvent();
 
+            if (this._isOldGnome()) {
+                this.remove_child(this._statusBin);
+                this.add(this._statusBin, { expand: false });
+            }
+
             this.insert_child_at_index(this._refreshButton, this.get_n_children() - 1);
             this.add_child(this._pendingLabel);
 
@@ -50,12 +51,19 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
         sync(device) {
             this._device = device;
-            this._switch.state = device.isConnected;
+            this._syncSwitch(device);
             this.visible = device.isPaired;
             if (this._showRefreshButton && device.isConnected)
                 this._refreshButton.show();
             else
                 this._refreshButton.hide();
+        }
+
+        _syncSwitch(device) {
+            if (this._isOldGnome())
+                return this._switch.setToggleState(device.isConnected);
+
+            this._switch.state = device.isConnected;
         }
 
         _buildRefreshButton() {
@@ -144,10 +152,6 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this._enablePending();
         }
 
-        hideRefreshButton() {
-            this._refreshButton.hide();
-        }
-
         _enablePending() {
             this._refreshButton.reactive = false;
             this._switch.hide();
@@ -160,6 +164,10 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this._switch.show();
             this._pendingLabel.hide();
             this.reactive = true;
+        }
+
+        _isOldGnome() {
+            return Config.PACKAGE_VERSION.match(/3\.3[24]/);
         }
     }
 );
