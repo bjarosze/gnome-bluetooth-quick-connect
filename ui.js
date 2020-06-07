@@ -25,6 +25,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Utils = Me.imports.utils;
 
+
 var PopupBluetoothDeviceMenuItem = GObject.registerClass(
     class PopupSwitchWithButtonMenuItem extends PopupMenu.PopupSwitchMenuItem {
         _init(device, params) {
@@ -66,7 +67,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
             let button = new St.Button({
                 child: icon,
-                x_align: Clutter.ActorAlign.END
+                x_align: St.Align.END
             });
 
             button.connect("enter-event", (widget) => {
