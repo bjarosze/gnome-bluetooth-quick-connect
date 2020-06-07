@@ -167,7 +167,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
         }
 
         _isOldGnome() {
-            return Config.PACKAGE_VERSION.match(/3\.3[24]/);
+            return Config.PACKAGE_VERSION.startsWith('3.34');
         }
     }
 );
