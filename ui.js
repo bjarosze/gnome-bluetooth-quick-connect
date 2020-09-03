@@ -18,7 +18,6 @@
 const Clutter = imports.gi.Clutter;
 const GObject = imports.gi.GObject;
 const St = imports.gi.St;
-const Tweener = imports.ui.tweener;
 const PopupMenu = imports.ui.popupMenu;
 const Config = imports.misc.config;
 
@@ -79,21 +78,19 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             });
 
             button.connect("enter-event", (widget) => {
-                Tweener.addTween(
-                    widget.child, {
+                    widget.child.ease( {
                         opacity: 255,
                         time: 0.05,
-                        transition: 'linear'
+                        transition: Clutter.AnimationMode.LINEAR
                     }
                 );
             });
 
             button.connect("leave-event", (widget) => {
-                Tweener.addTween(
-                    widget.child, {
+                    widget.child.ease( {
                         opacity: 155,
                         time: 0.05,
-                        transition: 'linear'
+                        transition: Clutter.AnimationMode.LINEAR
                     }
                 );
             });
