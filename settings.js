@@ -18,7 +18,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Gio = imports.gi.Gio;
 const GioSSS = Gio.SettingsSchemaSource;
 
-class Settings {
+var Settings = class Settings {
     constructor() {
         this.settings = this._loadSettings();
     }
@@ -59,6 +59,6 @@ class Settings {
 
         let schemaObj = schemaSource.lookup(schema, true);
 
-        return new Gio.Settings({settings_schema: schemaObj});
+        return new Gio.Settings({ settings_schema: schemaObj });
     }
-}
+};

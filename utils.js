@@ -34,7 +34,7 @@ function isDebugModeEnabled() {
     return new Settings().isDebugModeEnabled();
 }
 
-class Logger {
+var Logger = class Logger {
     constructor(settings) {
         this._enabled = settings.isDebugModeEnabled();
     }
@@ -44,7 +44,7 @@ class Logger {
 
         global.log(`[bluetooth-quick-connect] ${message}`);
     }
-}
+};
 
 function addSignalsHelperMethods(prototype) {
     prototype._connectSignal = function (subject, signal_name, method) {
