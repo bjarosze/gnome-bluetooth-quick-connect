@@ -75,8 +75,8 @@ SPDX-License-Identifier: GPL-2.0-or-later
     </child>
   </object>
   <object class="GtkScrolledWindow" id="items_container">
-    <property name="width-request">450</property>
-    <property name="height-request">692</property>
+    <!-- <property name="width-request">450</property> -->
+    <!-- <property name="height-request">692</property> -->
     <property name="visible">True</property>
     <property name="can-focus">True</property>
     <property name="vexpand">True</property>
