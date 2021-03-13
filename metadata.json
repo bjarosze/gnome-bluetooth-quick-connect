@@ -6,6 +6,9 @@
   "settings-schema": "org.gnome.shell.extensions.bluetooth-quick-connect",
   "gettext-domain": "bluetooth-quick-connect",
   "shell-version": [
-    "3.38"
+    "3.38",
+    "40.beta",
+    "40.rc",
+    "40"
   ]
 }

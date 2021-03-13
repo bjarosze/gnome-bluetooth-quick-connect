@@ -21,16 +21,12 @@ class SettingsBuilder {
 
     build() {
         this._builder.add_from_file(Me.path + '/Settings.ui');
-        this._settingsBox = this._builder.get_object('bluetooth_quick_connect_settings');
+        // this._settingsBox = this._builder.get_object('bluetooth_quick_connect_settings');
 
-
-        this._viewport = new Gtk.Viewport();
-        this._viewport.add(this._settingsBox);
-        this._widget = new Gtk.ScrolledWindow();
-        this._widget.add(this._viewport);
-
+        this._widget = this._builder.get_object('items_container')
 
         this._builder.get_object('auto_power_off_settings_button').connect('clicked', () => {
+            console.log(this)
             let dialog = new Gtk.Dialog({
                 title: 'Auto power off settings',
                 transient_for: this._widget.get_toplevel(),
@@ -47,7 +43,8 @@ class SettingsBuilder {
                 dialog.destroy();
             });
 
-            dialog.show_all();
+            // if (dialog.show_all)
+                dialog.show_all();
         });
 
 
@@ -84,7 +81,9 @@ function init() {
 function buildPrefsWidget() {
     let settings = new SettingsBuilder();
     let widget = settings.build();
-    widget.show_all();
+
+    if (widget.show_all)
+        widget.show_all();
 
     return widget;
 }
