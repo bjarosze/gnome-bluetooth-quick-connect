@@ -24,7 +24,8 @@ const Config = imports.misc.config;
 var PopupBluetoothDeviceMenuItem = GObject.registerClass(
     class PopupSwitchWithButtonMenuItem extends PopupMenu.PopupSwitchMenuItem {
         _init(device, params) {
-            super._init(device.name, device.isConnected, {});
+            let label = device.name || '(unknown)';
+            super._init(label, device.isConnected, {});
 
             this._device = device;
             this._showRefreshButton = params.showRefreshButton;
