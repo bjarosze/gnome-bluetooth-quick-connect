@@ -7,7 +7,6 @@
   "gettext-domain": "bluetooth-quick-connect",
   "shell-version": [
     "3.38",
-    "40.beta",
     "40.0"
   ]
 }
