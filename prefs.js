@@ -21,12 +21,11 @@ class SettingsBuilder {
 
     build() {
         this._builder.add_from_file(Me.path + '/Settings.ui');
-        // this._settingsBox = this._builder.get_object('bluetooth_quick_connect_settings');
 
         this._widget = this._builder.get_object('items_container')
 
         this._builder.get_object('auto_power_off_settings_button').connect('clicked', () => {
-            console.log(this)
+            // TODO: Not sure why in GTK4 this dialog is not raised, further inverstigation is needed. 
             let dialog = new Gtk.Dialog({
                 title: 'Auto power off settings',
                 transient_for: this._widget.get_toplevel(),
@@ -43,7 +42,7 @@ class SettingsBuilder {
                 dialog.destroy();
             });
 
-            // if (dialog.show_all)
+            if (dialog.show_all)
                 dialog.show_all();
         });
 
