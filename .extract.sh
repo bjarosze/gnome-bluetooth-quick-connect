@@ -14,7 +14,7 @@ fi
 mkdir -p "$dir"
 cd "$dir"
 
-GS=/usr/lib/gnome-shell/libgnome-shell.so
+GS=/usr/lib64/gnome-shell/libgnome-shell.so
 
 for r in $(gresource list $GS); do
     t="${r/#\/org\/gnome\/shell\/}"

@@ -25,25 +25,23 @@ class SettingsBuilder {
         this._widget = this._builder.get_object('items_container')
 
         this._builder.get_object('auto_power_off_settings_button').connect('clicked', () => {
-            // TODO: Not sure why in GTK4 this dialog is not raised, further inverstigation is needed. 
             let dialog = new Gtk.Dialog({
                 title: 'Auto power off settings',
-                transient_for: this._widget.get_toplevel(),
+                transient_for: this._widget.get_ancestor(Gtk.Window),
                 use_header_bar: true,
                 modal: true
             });
 
 
             let box = this._builder.get_object('auto_power_off_settings');
-            dialog.get_content_area().add(box);
+            dialog.get_content_area().append(box);
 
             dialog.connect('response', (dialog) => {
                 dialog.get_content_area().remove(box);
                 dialog.destroy();
             });
 
-            if (dialog.show_all)
-                dialog.show_all();
+            dialog.show();
         });
 
 
@@ -80,9 +78,6 @@ function init() {
 function buildPrefsWidget() {
     let settings = new SettingsBuilder();
     let widget = settings.build();
-
-    if (widget.show_all)
-        widget.show_all();
 
     return widget;
 }

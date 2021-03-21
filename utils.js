@@ -42,7 +42,7 @@ var Logger = class Logger {
     info(message) {
         if (!this._enabled) return;
 
-        global.log(`[bluetooth-quick-connect] ${message}`);
+        log(`[bluetooth-quick-connect] ${message}`);
     }
 };
 
