@@ -11,4 +11,7 @@ dist: all
 clean:
 	rm -fr gnome-bluetooth-quick-connect.zip schemas/gschemas.compiled
 
+install: dist
+	gnome-extensions install --force gnome-bluetooth-quick-connect.zip
+
 .PHONY: all clean dist
