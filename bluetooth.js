@@ -100,7 +100,7 @@ var BluetoothDevice = class {
     }
 
     update(iter) {
-        this.name = this._model.get_value(iter, GnomeBluetooth.Column.NAME);
+        this.name = this._model.get_value(iter, GnomeBluetooth.Column.ALIAS) || this._model.get_value(iter, GnomeBluetooth.Column.NAME);
         this.isConnected = this._model.get_value(iter, GnomeBluetooth.Column.CONNECTED);
         this.isPaired = this._model.get_value(iter, GnomeBluetooth.Column.PAIRED);
         this.mac = this._model.get_value(iter, GnomeBluetooth.Column.ADDRESS);
