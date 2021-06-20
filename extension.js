@@ -187,13 +187,13 @@ Utils.addSignalsHelperMethods(BluetoothQuickConnect.prototype);
 
 let bluetoothQuickConnect = null;
 
-function init() {
-    let bluetooth = Main.panel.statusArea.aggregateMenu._bluetooth;
-    let settings = new Settings();
-    bluetoothQuickConnect = new BluetoothQuickConnect(bluetooth, settings);
-}
+function init() {}
 
 function enable() {
+    bluetoothQuickConnect = new BluetoothQuickConnect(
+        Main.panel.statusArea.aggregateMenu._bluetooth,
+        new Settings()
+    );
     bluetoothQuickConnect.test();
     bluetoothQuickConnect.enable();
 }
