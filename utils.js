@@ -44,6 +44,10 @@ var Logger = class Logger {
 
         log(`[bluetooth-quick-connect] ${message}`);
     }
+
+    warn(message) {
+        log(`[bluetooth-quick-connect WARNING] ${message}`);
+    }
 };
 
 function addSignalsHelperMethods(prototype) {

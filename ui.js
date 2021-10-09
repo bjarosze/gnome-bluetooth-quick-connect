@@ -18,16 +18,24 @@
 const Clutter = imports.gi.Clutter;
 const GObject = imports.gi.GObject;
 const St = imports.gi.St;
+const GLib = imports.gi.GLib;
 const PopupMenu = imports.ui.popupMenu;
 const Config = imports.misc.config;
 
 var PopupBluetoothDeviceMenuItem = GObject.registerClass(
     class PopupSwitchWithButtonMenuItem extends PopupMenu.PopupSwitchMenuItem {
-        _init(device, params) {
+        _init(device, batteryProvider, logger, params) {
             let label = device.name || '(unknown)';
             super._init(label, device.isConnected, {});
 
+            this._logger = logger;
+
             this._device = device;
+            this._optBatDevice = [];
+            this._batteryProvider = batteryProvider;
+            this._batteryDeviceChangeSignal = null;
+            this._batteryDeviceLocateTimeout = null;
+
             this._showRefreshButton = params.showRefreshButton;
             this._closeMenuOnAction = params.closeMenuOnAction;
 
@@ -49,21 +57,94 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this.sync(device);
         }
 
+        _tryLocateBatteryWithTimeout(count = 10) {
+
+            let device = this._device;
+
+            this._logger.info(`looking up battery info for ${device.name}`);
+
+            this._batteryDeviceLocateTimeout = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                1000,
+                () => {
+                    this._logger.info(`Looking up battery info for ${device.name}`);
+                    let _bat_device = this._batteryProvider.locateBatteryDevice(device);
+
+                    if (_bat_device.length) {
+                        this.batteryFound(_bat_device);
+                        this._batteryDeviceLocateTimeout = null;
+                    } else if (count) {
+                        // try again
+                        this._tryLocateBatteryWithTimeout(count - 1);
+                    } else {
+                        this._logger.info(`Did not find a battery for device ${device.name}`);
+                        this._batteryDeviceLocateTimeout = null;
+                    }
+                });
+        }
+
+        batteryFound(optBatDevice) {
+            this._optBatDevice = optBatDevice;
+            this._update_label();
+
+            this._optBatDevice.map(bat =>
+                this._batteryDeviceChangeSignal = bat.connect("notify", (_dev, pspec) => {
+                    this._logger.info(`${_dev.native_path} notified ${pspec.name}, percentage is ${_dev.percentage}`);
+                    this._update_label();
+                })
+            );
+        }
+
+        disconnectSignals() {
+            this._optBatDevice.map(bat => bat.disconnect(this._batteryDeviceChangeSignal));
+            this._batteryDeviceChangeSignal = null;
+
+            if (this._batteryDeviceLocateTimeout != null) {
+                GLib.Source.remove(this._batteryDeviceLocateTimeout);
+                this._batteryDeviceLocateTimeout = null;
+            }
+        }
+
         sync(device) {
+            this.disconnectSignals();
+
+            // if (this._optUPowerDevice.length) {
+            //     this._optUPowerDevice[0].unref();
+            // }
+
             this._device = device;
+
+            if (device.isConnected)
+                this._tryLocateBatteryWithTimeout();
+
             this._syncSwitch(device);
             this.visible = device.isPaired;
             if (this._showRefreshButton && device.isConnected)
                 this._refreshButton.show();
             else
                 this._refreshButton.hide();
+
+            this._update_label();
         }
 
         _syncSwitch(device) {
-            if (this._isOldGnome())
-                return this._switch.setToggleState(device.isConnected);
+            if (this._isOldGnome()) {
+                this._switch.setToggleState(device.isConnected);
+            } else {
+                this._switch.state = device.isConnected;
+            }
+        }
 
-            this._switch.state = device.isConnected;
+        _update_label() {
+            this._logger.info(`updating label for ${this._device.name} ${this._optBatDevice.map(bat => bat.percentage)}`);
+            let dev_name = this._device.name || "unknown";
+            let opt_bat_percent = this._optBatDevice
+                .filter(bat => bat.percentage != null)
+                .map(bat => ` (${bat.percentage}%)`);
+
+            let bat_percent = opt_bat_percent[0] || "";
+
+            this.label.text = dev_name + bat_percent;
         }
 
         _buildRefreshButton() {
@@ -99,7 +180,8 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             button.connect('clicked', () => {
                 this._enablePending();
                 this._device.reconnect(() => {
-                    this._disablePending()
+                    this._disablePending();
+                    this._update_label();
                 });
 
                 if (this._closeMenuOnAction)
@@ -118,14 +200,16 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
         _connectToggledEvent() {
             this.connect('toggled', (item, state) => {
-                if (state)
+                if (state) {
                     this._device.connect(() => {
-                        this._disablePending()
+                        this._disablePending();
+                        this._update_label();
                     });
-                else
+                } else {
                     this._device.disconnect(() => {
                         this._disablePending()
                     });
+                }
             });
         }
 

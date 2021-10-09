@@ -23,6 +23,7 @@ const UiExtension = Me.imports.ui;
 const Bluetooth = Me.imports.bluetooth;
 const Utils = Me.imports.utils;
 const Settings = Me.imports.settings.Settings;
+const BatteryProvider = Me.imports.power.UPowerBatteryProvider;
 
 
 class BluetoothQuickConnect {
@@ -32,7 +33,8 @@ class BluetoothQuickConnect {
         this._menu = bluetooth._item.menu;
         this._proxy = bluetooth._proxy;
         this._controller = new Bluetooth.BluetoothController();
-        this._settings = settings
+        this._settings = settings;
+        this._battery_provider = new BatteryProvider(this._logger);
 
         this._items = {};
     }
@@ -50,7 +52,7 @@ class BluetoothQuickConnect {
         this._connectSignal(this._menu, 'open-state-changed', (menu, isOpen) => {
             this._logger.info(`Menu toggled: ${isOpen}`);
             if (isOpen)
-                this._disconnectIdleMonitor()
+                this._disconnectIdleMonitor();
             else
                 this._connectIdleMonitor();
 
@@ -97,7 +99,7 @@ class BluetoothQuickConnect {
         });
 
         this._connectSignal(Main.sessionMode, 'updated', () => {
-            this._refresh()
+            this._refresh();
         });
     }
 
@@ -108,14 +110,18 @@ class BluetoothQuickConnect {
     }
 
     _addMenuItem(device) {
-        this._logger.info(`Adding device menu item: ${device.name}`);
+        this._logger.info(`Adding device menu item: ${device.name} ${device.mac}`);
+
         let menuItem = new UiExtension.PopupBluetoothDeviceMenuItem(
             device,
+            this._battery_provider,
+            this._logger,
             {
                 showRefreshButton: this._settings.isShowRefreshButtonEnabled(),
                 closeMenuOnAction: !this._settings.isKeepMenuOnToggleEnabled()
             }
         );
+
         this._items[device.mac] = menuItem;
         this._menu.addMenuItem(menuItem, 1);
 
@@ -183,7 +189,6 @@ class BluetoothQuickConnect {
 }
 
 Utils.addSignalsHelperMethods(BluetoothQuickConnect.prototype);
-
 
 let bluetoothQuickConnect = null;
 
