@@ -108,9 +108,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
         sync(device) {
             this.disconnectSignals();
 
-            // if (this._optUPowerDevice.length) {
-            //     this._optUPowerDevice[0].unref();
-            // }
+            this._optBatDevice = [];
 
             this._device = device;
 
