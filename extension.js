@@ -98,7 +98,7 @@ class BluetoothQuickConnect {
             else if (device.isPaired)
                 this._syncMenuItem(device);
             else
-                this._logger(`Skipping change event for unpaired device ${device.name}`);
+                this._logger.info(`Skipping change event for unpaired device ${device.name}`);
         });
 
         this._connectSignal(this._controller, 'device-deleted', () => {
