@@ -51,6 +51,20 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
                 this.add(this._statusBin, { expand: false });
             }
 
+            this._bat_icon = new St.Icon({ style_class: 'popup-menu-icon' });
+            this.insert_child_at_index(this._bat_icon, this.get_n_children() - 1);
+            this._bat_icon.icon_name = null;
+
+            // dirty trick: instantiate the label with text 100%, so we can set
+            // the natural width of the label in case monospace has no effect
+            this._bat_percentage_label = new St.Label( {y_expand: false, style_class: 'monospace', text: '100%'} );
+            this._bat_percentage_label.natural_width = this._bat_percentage_label.width;
+            this._bat_percentage_label.text = "";
+
+            this._bat_percentage_label.x_expand = false;
+            this._bat_percentage_label.x_align = Clutter.ActorAlign.LEFT;
+            this.insert_child_at_index(this._bat_percentage_label, this.get_n_children() - 1);
+
             this.insert_child_at_index(this._refreshButton, this.get_n_children() - 1);
             this.add_child(this._pendingLabel);
 
@@ -136,13 +150,24 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
         _update_label() {
             this._logger.info(`updating label for ${this._device.name} ${this._optBatDevice.map(bat => bat.percentage)}`);
             let dev_name = this._device.name || "unknown";
-            let opt_bat_percent = this._optBatDevice
+
+            // Set labels values to devault without battery
+            this.label.text = dev_name;
+            this._bat_icon.icon_name = null;
+            this._bat_percentage_label.text = "";
+
+            // Set bat label and icon to the proper values, when
+            // a battery is present
+            this._optBatDevice
                 .filter(bat => bat.percentage != null)
-                .map(bat => ` (${bat.percentage}%)`);
+                .map(bat => {
+                    this._bat_percentage_label.text = '%d%%'.format(bat.percentage);
 
-            let bat_percent = opt_bat_percent[0] || "";
+                    let fillLevel = 10 * Math.floor(bat.percentage / 10);
+                    let icon_name = 'battery-level-%d-symbolic'.format(fillLevel);
+                    this._bat_icon.icon_name = icon_name;
+                });
 
-            this.label.text = dev_name + bat_percent;
         }
 
         _buildRefreshButton() {
