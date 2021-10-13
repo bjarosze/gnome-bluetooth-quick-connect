@@ -94,8 +94,10 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
                 this._batteryInfo.setPercentage(bat.percentage);
 
                 this._batteryDeviceChangeSignal = bat.connect("notify", (_dev, pspec) => {
-                    this._logger.info(`${_dev.native_path} notified ${pspec.name}, percentage is ${_dev.percentage}`);
-                    this._batteryInfo.setPercentage(bat.percentage);
+                    if (pspec.name == 'percentage') {
+                        this._logger.info(`${_dev.native_path} notified ${pspec.name}, percentage is ${_dev.percentage}`);
+                        this._batteryInfo.setPercentage(bat.percentage);
+                    }
                 });
             }
         }
