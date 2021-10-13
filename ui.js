@@ -51,19 +51,8 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
                 this.add(this._statusBin, { expand: false });
             }
 
-            this._bat_icon = new St.Icon({ style_class: 'popup-menu-icon' });
-            this.insert_child_at_index(this._bat_icon, this.get_n_children() - 1);
-            this._bat_icon.icon_name = null;
-
-            // dirty trick: instantiate the label with text 100%, so we can set
-            // the natural width of the label in case monospace has no effect
-            this._bat_percentage_label = new St.Label( {y_expand: false, style_class: 'monospace', text: '100%'} );
-            this._bat_percentage_label.natural_width = this._bat_percentage_label.width;
-            this._bat_percentage_label.text = "";
-
-            this._bat_percentage_label.x_expand = false;
-            this._bat_percentage_label.x_align = Clutter.ActorAlign.LEFT;
-            this.insert_child_at_index(this._bat_percentage_label, this.get_n_children() - 1);
+            this._batteryInfo = new BatteryInfoWidget({visible: false});
+            this.insert_child_at_index(this._batteryInfo, this.get_n_children() - 1);
 
             this.insert_child_at_index(this._refreshButton, this.get_n_children() - 1);
             this.add_child(this._pendingLabel);
@@ -99,14 +88,16 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
         batteryFound(optBatDevice) {
             this._optBatDevice = optBatDevice;
-            this._update_label();
 
-            this._optBatDevice.map(bat =>
+            for (const bat of this._optBatDevice) {
+                this._batteryInfo.show();
+                this._batteryInfo.setPercentage(bat.percentage);
+
                 this._batteryDeviceChangeSignal = bat.connect("notify", (_dev, pspec) => {
                     this._logger.info(`${_dev.native_path} notified ${pspec.name}, percentage is ${_dev.percentage}`);
-                    this._update_label();
-                })
-            );
+                    this._batteryInfo.setPercentage(bat.percentage);
+                });
+            }
         }
 
         disconnectSignals() {
@@ -123,6 +114,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this.disconnectSignals();
 
             this._optBatDevice = [];
+            this._batteryInfo.visible = false;
 
             this._device = device;
 
@@ -149,25 +141,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
         _update_label() {
             this._logger.info(`updating label for ${this._device.name} ${this._optBatDevice.map(bat => bat.percentage)}`);
-            let dev_name = this._device.name || "unknown";
-
-            // Set labels values to devault without battery
-            this.label.text = dev_name;
-            this._bat_icon.icon_name = null;
-            this._bat_percentage_label.text = "";
-
-            // Set bat label and icon to the proper values, when
-            // a battery is present
-            this._optBatDevice
-                .filter(bat => bat.percentage != null)
-                .map(bat => {
-                    this._bat_percentage_label.text = '%d%%'.format(bat.percentage);
-
-                    let fillLevel = 10 * Math.floor(bat.percentage / 10);
-                    let icon_name = 'battery-level-%d-symbolic'.format(fillLevel);
-                    this._bat_icon.icon_name = icon_name;
-                });
-
+            this.label.text = this._device.name || "unknown";;
         }
 
         _buildRefreshButton() {
@@ -273,6 +247,40 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
         _isOldGnome() {
             return Config.PACKAGE_VERSION.startsWith('3.34');
+        }
+    }
+);
+
+var BatteryInfoWidget = GObject.registerClass(
+    class BatteryInfoWidget extends St.BoxLayout {
+        _init(params) {
+            super._init(params);
+            this._icon = new St.Icon({ style_class: 'popup-menu-icon' });
+            this.add_child(this._icon);
+            this._icon.icon_name = null;
+
+            // dirty trick: instantiate the label with text 100%, so we can set
+            // the natural width of the label in case monospace has no effect
+            this._label = new St.Label({ y_expand: false, style_class: 'monospace', text: '100%' });
+            this._label.natural_width = this._label.width;
+            this._label.text = "";
+
+            this._label.x_expand = false;
+            this._label.x_align = Clutter.ActorAlign.LEFT;
+            this.add_child(this._label);
+        }
+
+        setPercentage(value) {
+            if (value == null) {
+                this._label.text = '';
+                this._icon.icon_name = 'battery-missing-symbolic';
+            } else {
+                this._label.text = '%d%%'.format(value);
+
+                let fillLevel = 10 * Math.floor(value / 10);
+                let iconName = 'battery-level-%d-symbolic'.format(fillLevel);
+                this._icon.icon_name = iconName;
+            }
         }
     }
 );
