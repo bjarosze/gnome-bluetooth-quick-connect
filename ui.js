@@ -71,10 +71,10 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
                 1000,
                 () => {
                     this._logger.info(`Looking up battery info for ${device.name}`);
-                    let _bat_device = this._batteryProvider.locateBatteryDevice(device);
+                    let optBat = this._batteryProvider.locateBatteryDevice(device);
 
-                    if (_bat_device.length) {
-                        this.batteryFound(_bat_device);
+                    if (optBat.length) {
+                        this._batteryFound(optBat);
                         this._batteryDeviceLocateTimeout = null;
                     } else if (count) {
                         // try again
@@ -86,7 +86,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
                 });
         }
 
-        batteryFound(optBatDevice) {
+        _batteryFound(optBatDevice) {
             this._optBatDevice = optBatDevice;
 
             for (const bat of this._optBatDevice) {
@@ -100,7 +100,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             }
         }
 
-        disconnectSignals() {
+        _disconnectSignals() {
             this._optBatDevice.map(bat => bat.disconnect(this._batteryDeviceChangeSignal));
             this._batteryDeviceChangeSignal = null;
 
@@ -111,15 +111,12 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
         }
 
         sync(device) {
-            this.disconnectSignals();
+            this._disconnectSignals();
 
             this._optBatDevice = [];
             this._batteryInfo.visible = false;
 
             this._device = device;
-
-            if (device.isConnected)
-                this._tryLocateBatteryWithTimeout();
 
             this._syncSwitch(device);
             this.visible = device.isPaired;
@@ -128,7 +125,11 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             else
                 this._refreshButton.hide();
 
-            this._update_label();
+            this._updateDeviceInfo();
+
+            if (device.isConnected)
+                this._tryLocateBatteryWithTimeout();
+
         }
 
         _syncSwitch(device) {
@@ -139,7 +140,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             }
         }
 
-        _update_label() {
+        _updateDeviceInfo() {
             this._logger.info(`updating label for ${this._device.name} ${this._optBatDevice.map(bat => bat.percentage)}`);
             this.label.text = this._device.name || "unknown";;
         }
@@ -178,7 +179,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
                 this._enablePending();
                 this._device.reconnect(() => {
                     this._disablePending();
-                    this._update_label();
+                    this._updateDeviceInfo();
                 });
 
                 if (this._closeMenuOnAction)
@@ -200,11 +201,11 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
                 if (state) {
                     this._device.connect(() => {
                         this._disablePending();
-                        this._update_label();
+                        this._updateDeviceInfo();
                     });
                 } else {
                     this._device.disconnect(() => {
-                        this._disablePending()
+                        this._disablePending();
                     });
                 }
             });
