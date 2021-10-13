@@ -102,7 +102,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             }
         }
 
-        _disconnectSignals() {
+        disconnectSignals() {
             this._optBatDevice.map(bat => bat.disconnect(this._batteryDeviceChangeSignal));
             this._batteryDeviceChangeSignal = null;
 
@@ -113,7 +113,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
         }
 
         sync(device) {
-            this._disconnectSignals();
+            this.disconnectSignals();
 
             this._optBatDevice = [];
             this._batteryInfo.visible = false;
