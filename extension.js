@@ -23,6 +23,7 @@ const UiExtension = Me.imports.ui;
 const Bluetooth = Me.imports.bluetooth;
 const Utils = Me.imports.utils;
 const Settings = Me.imports.settings.Settings;
+const BatteryProvider = Me.imports.power.UPowerBatteryProvider;
 
 
 class BluetoothQuickConnect {
@@ -32,7 +33,8 @@ class BluetoothQuickConnect {
         this._menu = bluetooth._item.menu;
         this._proxy = bluetooth._proxy;
         this._controller = new Bluetooth.BluetoothController();
-        this._settings = settings
+        this._settings = settings;
+        this._battery_provider = new BatteryProvider(this._logger);
 
         this._items = {};
     }
@@ -50,7 +52,7 @@ class BluetoothQuickConnect {
         this._connectSignal(this._menu, 'open-state-changed', (menu, isOpen) => {
             this._logger.info(`Menu toggled: ${isOpen}`);
             if (isOpen)
-                this._disconnectIdleMonitor()
+                this._disconnectIdleMonitor();
             else
                 this._connectIdleMonitor();
 
@@ -82,40 +84,53 @@ class BluetoothQuickConnect {
 
         this._connectSignal(this._controller, 'device-inserted', (ctrl, device) => {
             this._logger.info(`Device inserted event: ${device.name}`);
-            this._addMenuItem(device);
+            if (device.isPaired) {
+                this._addMenuItem(device);
+            } else {
+                this._logger.info(`Device ${device.name} not paired, ignoring`);
+            }
         });
+
         this._connectSignal(this._controller, 'device-changed', (ctrl, device) => {
             this._logger.info(`Device changed event: ${device.name}`);
             if (device.isDefault)
                 this._refresh();
-            else
+            else if (device.isPaired)
                 this._syncMenuItem(device);
+            else
+                this._logger.info(`Skipping change event for unpaired device ${device.name}`);
         });
+
         this._connectSignal(this._controller, 'device-deleted', () => {
             this._logger.info(`Device deleted event`);
             this._refresh();
         });
 
         this._connectSignal(Main.sessionMode, 'updated', () => {
-            this._refresh()
+            this._refresh();
         });
     }
 
     _syncMenuItem(device) {
         this._logger.info(`Synchronizing device menu item: ${device.name}`);
         let item = this._items[device.mac] || this._addMenuItem(device);
+
         item.sync(device);
     }
 
     _addMenuItem(device) {
-        this._logger.info(`Adding device menu item: ${device.name}`);
+        this._logger.info(`Adding device menu item: ${device.name} ${device.mac}`);
+
         let menuItem = new UiExtension.PopupBluetoothDeviceMenuItem(
             device,
+            this._battery_provider,
+            this._logger,
             {
                 showRefreshButton: this._settings.isShowRefreshButtonEnabled(),
                 closeMenuOnAction: !this._settings.isKeepMenuOnToggleEnabled()
             }
         );
+
         this._items[device.mac] = menuItem;
         this._menu.addMenuItem(menuItem, 1);
 
@@ -161,12 +176,17 @@ class BluetoothQuickConnect {
 
     _addDevicesToMenu() {
         this._controller.getDevices().forEach((device) => {
-            this._addMenuItem(device);
+            if (device.isPaired) {
+                let item = this._addMenuItem(device);
+            } else {
+                this._logger.info(`skipping adding device ${device.name}`);
+            }
         });
     }
 
     _removeDevicesFromMenu() {
         Object.values(this._items).forEach((item) => {
+            item.disconnectSignals();
             item.destroy();
         });
 
@@ -183,7 +203,6 @@ class BluetoothQuickConnect {
 }
 
 Utils.addSignalsHelperMethods(BluetoothQuickConnect.prototype);
-
 
 let bluetoothQuickConnect = null;
 
