@@ -20,7 +20,6 @@ const GObject = imports.gi.GObject;
 const St = imports.gi.St;
 const GLib = imports.gi.GLib;
 const PopupMenu = imports.ui.popupMenu;
-const Config = imports.misc.config;
 
 var PopupBluetoothDeviceMenuItem = GObject.registerClass(
     class PopupSwitchWithButtonMenuItem extends PopupMenu.PopupSwitchMenuItem {
@@ -45,11 +44,6 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this._refreshButton = this._buildRefreshButton();
             this._pendingLabel = this._buildPendingLabel();
             this._connectToggledEvent();
-
-            if (this._isOldGnome()) {
-                this.remove_child(this._statusBin);
-                this.add(this._statusBin, { expand: false });
-            }
 
             this._batteryInfo = new BatteryInfoWidget({visible: false});
             this.insert_child_at_index(this._batteryInfo, this.get_n_children() - 1);
@@ -135,11 +129,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
         }
 
         _syncSwitch(device) {
-            if (this._isOldGnome()) {
-                this._switch.setToggleState(device.isConnected);
-            } else {
-                this._switch.state = device.isConnected;
-            }
+            this._switch.state = device.isConnected;
         }
 
         _updateDeviceInfo() {
@@ -246,10 +236,6 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this._switch.show();
             this._pendingLabel.hide();
             this.reactive = true;
-        }
-
-        _isOldGnome() {
-            return Config.PACKAGE_VERSION.startsWith('3.34');
         }
     }
 );
