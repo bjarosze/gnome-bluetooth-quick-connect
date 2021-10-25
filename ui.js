@@ -114,27 +114,18 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
             this._device = device;
 
-            this._syncSwitch(device);
+            this._switch.state = device.isConnected;
             this.visible = device.isPaired;
             if (this._showRefreshButton && device.isConnected)
                 this._refreshButton.show();
             else
                 this._refreshButton.hide();
 
-            this._updateDeviceInfo();
+            this._disablePending();
 
             if (device.isConnected)
                 this._tryLocateBatteryWithTimeout();
 
-        }
-
-        _syncSwitch(device) {
-            this._switch.state = device.isConnected;
-        }
-
-        _updateDeviceInfo() {
-            this._logger.info(`updating label for ${this._device.name} ${this._optBatDevice.map(bat => bat.percentage)}`);
-            this.label.text = this._device.name || "unknown";;
         }
 
         _buildRefreshButton() {
@@ -169,10 +160,8 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
             button.connect('clicked', () => {
                 this._enablePending();
-                this._device.reconnect(() => {
-                    this._disablePending();
-                    this._updateDeviceInfo();
-                });
+                this._device.reconnect();
+                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 10000, () => this._disablePending());
 
                 if (this._closeMenuOnAction)
                     this.emit('activate', Clutter.get_current_event());
@@ -190,16 +179,13 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
         _connectToggledEvent() {
             this.connect('toggled', (item, state) => {
-                if (state) {
-                    this._device.connect(() => {
-                        this._disablePending();
-                        this._updateDeviceInfo();
-                    });
-                } else {
-                    this._device.disconnect(() => {
-                        this._disablePending();
-                    });
-                }
+                if (state)
+                    this._device.connect();
+                else
+                    this._device.disconnect();
+
+                // in case there is no change on device
+                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 10000, () => this._disablePending());
             });
         }
 

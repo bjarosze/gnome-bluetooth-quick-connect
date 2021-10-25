@@ -107,15 +107,15 @@ var BluetoothDevice = class {
         this.isDefault = this._model.get_value(iter, GnomeBluetooth.Column.DEFAULT);
     }
 
-    disconnect(callback) {
-        Utils.spawn(`bluetoothctl -- disconnect ${this.mac}`, callback)
+    disconnect() {
+        Utils.spawn(`bluetoothctl -- disconnect ${this.mac}`)
     }
 
-    connect(callback) {
-        Utils.spawn(`bluetoothctl -- connect ${this.mac}`, callback)
+    connect() {
+        Utils.spawn(`bluetoothctl -- connect ${this.mac}`)
     }
 
-    reconnect(callback) {
-        Utils.spawn(`bluetoothctl -- disconnect ${this.mac} && bluetoothctl -- connect ${this.mac}`, callback)
+    reconnect() {
+        Utils.spawn(`bluetoothctl -- disconnect ${this.mac} && sleep 7 && bluetoothctl -- connect ${this.mac}`)
     }
 }
