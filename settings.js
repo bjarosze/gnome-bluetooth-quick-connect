@@ -47,6 +47,14 @@ var Settings = class Settings {
         return this.settings.get_boolean('debug-mode-on');
     }
 
+    isShowBatteryValueEnabled() {
+        return this.settings.get_boolean('show-battery-value-on');
+    }
+
+    isShowBatteryIconEnabled() {
+        return this.settings.get_boolean('show-battery-icon-on');
+    }
+
     _loadSettings() {
         let extension = ExtensionUtils.getCurrentExtension();
         let schema = extension.metadata['settings-schema'];

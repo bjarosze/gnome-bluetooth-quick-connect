@@ -68,6 +68,12 @@ class SettingsBuilder {
 
         let debugModeOnSwitch = this._builder.get_object('debug_mode_on');
         this._settings.bind('debug-mode-on', debugModeOnSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        let batteryValueOnSwitch = this._builder.get_object('show_battery_value_on');
+        this._settings.bind('show-battery-value-on', batteryValueOnSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
+
+        let batteryIconOnSwitch = this._builder.get_object('show_battery_icon_on');
+        this._settings.bind('show-battery-icon-on', batteryIconOnSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
     }
 
 }

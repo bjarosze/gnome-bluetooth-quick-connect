@@ -45,7 +45,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this._pendingLabel = this._buildPendingLabel();
             this._connectToggledEvent();
 
-            this._batteryInfo = new BatteryInfoWidget({visible: false});
+            this._batteryInfo = new BatteryInfoWidget(params.showBatteryValue, params.showBatteryIcon);
             this.insert_child_at_index(this._batteryInfo, this.get_n_children() - 1);
 
             this.insert_child_at_index(this._refreshButton, this.get_n_children() - 1);
@@ -242,8 +242,8 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
 var BatteryInfoWidget = GObject.registerClass(
     class BatteryInfoWidget extends St.BoxLayout {
-        _init(params) {
-            super._init(params);
+        _init(showBatteryValue, showBatteryIcon) {
+            super._init({ visible: false });
             this._icon = new St.Icon({ style_class: 'popup-menu-icon' });
             this.add_child(this._icon);
             this._icon.icon_name = null;
@@ -257,6 +257,9 @@ var BatteryInfoWidget = GObject.registerClass(
             this._label.x_expand = false;
             this._label.x_align = Clutter.ActorAlign.LEFT;
             this.add_child(this._label);
+
+            if (!showBatteryValue) this._label.hide();
+            if (!showBatteryIcon) this._icon.hide();
         }
 
         setPercentage(value) {

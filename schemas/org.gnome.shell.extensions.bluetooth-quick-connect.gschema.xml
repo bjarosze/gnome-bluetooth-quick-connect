@@ -30,5 +30,13 @@ SPDX-License-Identifier: GPL-2.0-or-later
       <default>false</default>
       <summary>Debug mode</summary>
     </key>
+    <key name="show-battery-value-on" type="b">
+      <default>false</default>
+      <summary>Show battery level as value</summary>
+    </key>
+    <key name="show-battery-icon-on" type="b">
+      <default>true</default>
+      <summary>Show battery level as icon</summary>
+    </key>
   </schema>
 </schemalist>

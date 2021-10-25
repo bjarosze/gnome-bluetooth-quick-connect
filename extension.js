@@ -127,7 +127,9 @@ class BluetoothQuickConnect {
             this._logger,
             {
                 showRefreshButton: this._settings.isShowRefreshButtonEnabled(),
-                closeMenuOnAction: !this._settings.isKeepMenuOnToggleEnabled()
+                closeMenuOnAction: !this._settings.isKeepMenuOnToggleEnabled(),
+                showBatteryValue: this._settings.isShowBatteryValueEnabled(),
+                showBatteryIcon: this._settings.isShowBatteryIconEnabled()
             }
         );
 
