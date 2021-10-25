@@ -104,6 +104,16 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
                 GLib.Source.remove(this._batteryDeviceLocateTimeout);
                 this._batteryDeviceLocateTimeout = null;
             }
+
+            if (this._afterReconnectTimeout != null) {
+                GLib.Source.remove(this._afterReconnectTimeout);
+                this._afterReconnectTimeout = null
+            }
+
+            if (this._afterToggleTimeout != null) {
+                GLib.Source.remove(this._afterToggleTimeout);
+                this._afterToggleTimeout = null
+            }
         }
 
         sync(device) {
@@ -161,7 +171,14 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             button.connect('clicked', () => {
                 this._enablePending();
                 this._device.reconnect();
-                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 10000, () => this._disablePending());
+                this._afterReconnectTimeout = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    10000,
+                    () => {
+                        this._disablePending();
+                        this._afterReconnectTimeout = null;
+                    }
+                );
 
                 if (this._closeMenuOnAction)
                     this.emit('activate', Clutter.get_current_event());
@@ -185,7 +202,14 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
                     this._device.disconnect();
 
                 // in case there is no change on device
-                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 10000, () => this._disablePending());
+                this._afterToggleTimeout = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    10000,
+                    () => {
+                        this._disablePending();
+                        this._afterToggleTimeout = null;
+                    }
+                );
             });
         }
 
