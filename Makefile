@@ -6,7 +6,7 @@ all:
 	glib-compile-schemas --strict --targetdir=schemas schemas
 
 dist: all
-	zip gnome-bluetooth-quick-connect.zip -9r *
+	zip gnome-bluetooth-quick-connect.zip -9r * -x Makefile
 
 clean:
 	rm -fr gnome-bluetooth-quick-connect.zip schemas/gschemas.compiled
