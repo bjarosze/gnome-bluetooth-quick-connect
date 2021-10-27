@@ -25,8 +25,18 @@ function spawn(command, callback) {
         null
     );
 
-    if (callback)
-        GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, callback);
+    // ensure we always close the pid to avoid zombie processes
+    GLib.child_watch_add(
+        GLib.PRIORITY_DEFAULT, pid,
+        (_pid, _status) => {
+            try {
+                if (callback) {
+                    callback(_pid, _status);
+                }
+            } finally {
+                GLib.spawn_close_pid(_pid);
+            }
+        });
 }
 
 
