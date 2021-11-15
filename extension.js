@@ -74,7 +74,7 @@ class BluetoothQuickConnect {
             GLib.spawn_command_line_sync("bluetoothctl --version");
             this._logger.info('Test succeeded');
         } catch (error) {
-            Main.notifyError(_('Bluetooth quick connect'), _(`Error trying to execute "bluetoothctl"`));
+            Main.notifyError(_('Bluetooth Quick Connect'), _(`Error trying to execute "bluetoothctl"`));
             this._logger.info('Test failed');
         }
     }

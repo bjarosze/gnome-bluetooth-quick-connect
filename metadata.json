@@ -1,5 +1,5 @@
 {
-  "name": "Bluetooth quick connect",
+  "name": "Bluetooth Quick Connect",
   "description": "Allow to connect to paired devices from gnome control panel.\n",
   "uuid": "bluetooth-quick-connect@bjarosze.gmail.com",
   "url": "https://github.com/bjarosze/gnome-bluetooth-quick-connect",

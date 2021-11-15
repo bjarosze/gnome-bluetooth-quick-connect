@@ -1,4 +1,4 @@
-# Bluetooth quick connect
+# Bluetooth Quick Connect
 
 This extension allows paired Bluetooth devices to be connected and
 disconnected via the GNOME system menu, without need to enter the
