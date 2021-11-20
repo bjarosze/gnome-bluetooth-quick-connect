@@ -162,14 +162,6 @@ class BluetoothQuickConnect {
         this._idleMonitorId = null;
     }
 
-    _connectSignal(subject, signal_name, method) {
-        let signal_id = subject.connect(signal_name, method);
-        this._signals.push({
-            subject: subject,
-            signal_id: signal_id
-        });
-    }
-
     _tryRefresh(count = 10) {
         try {
             this._logger.info('Refreshing devices list');
