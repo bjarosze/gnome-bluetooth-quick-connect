@@ -186,7 +186,7 @@ class BluetoothQuickConnect {
                     1000,
                     () => {
                         this._logger.info('retrying refresh devices');
-                        _tryRefresh(count - 1);
+                        this._tryRefresh(count - 1);
                     }
                 );
             } else {
