@@ -177,7 +177,18 @@ class BluetoothQuickConnect {
                     GLib.PRIORITY_DEFAULT,
                     1000,
                     () => {
-                        this._logger.info('retrying refresh devices');
+                        this._logger.info(`Retrying refresh devices after failure caused by ${e}`);
+                        if (this._controller) {
+                            this._logger.info('Nuking the bluetooth client');
+                            this._disconnectSubjectSignals(this._controller);
+                            this._controller.destroy();
+                        }
+
+                        this._controller = new Bluetooth.BluetoothController();
+                        this._controller.enable();
+                        this._connectControllerSignals();
+
+                        this._logger.info('New controller in place. Retrying refresh');
                         this._tryRefresh(count - 1);
                     }
                 );
