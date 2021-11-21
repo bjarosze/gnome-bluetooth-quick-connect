@@ -35,6 +35,7 @@ class BluetoothQuickConnect {
         this._controller = new Bluetooth.BluetoothController();
         this._settings = settings;
         this._battery_provider = new BatteryProvider(this._logger);
+        this._refreshTimeout = null;
 
         this._items = {};
     }
@@ -161,19 +162,49 @@ class BluetoothQuickConnect {
         this._idleMonitorId = null;
     }
 
-    _connectSignal(subject, signal_name, method) {
-        let signal_id = subject.connect(signal_name, method);
-        this._signals.push({
-            subject: subject,
-            signal_id: signal_id
-        });
+    _tryRefresh(count = 10) {
+        try {
+            this._logger.info('Refreshing devices list');
+            this._removeDevicesFromMenu();
+            this._addDevicesToMenu();
+            this._logger.info('Finished refreshing');
+
+            this._refreshTimeout = null;
+        } catch (e) {
+            this._logger.info(`Failed to refresh: ${e}`);
+            if (count) {
+                this._refreshTimeout = GLib.timeout_add(
+                    GLib.PRIORITY_DEFAULT,
+                    1000,
+                    () => {
+                        this._logger.info(`Retrying refresh devices after failure caused by ${e}`);
+                        if (this._controller) {
+                            this._logger.info('Nuking the bluetooth client');
+                            this._disconnectSubjectSignals(this._controller);
+                            this._controller.destroy();
+                        }
+
+                        this._controller = new Bluetooth.BluetoothController();
+                        this._controller.enable();
+                        this._connectControllerSignals();
+
+                        this._logger.info('New controller in place. Retrying refresh');
+                        this._tryRefresh(count - 1);
+                    }
+                );
+            } else {
+                this._logger.warn(`Failed to refresh: ${e}`);
+                this._refreshTimeout = null;
+            }
+        }
     }
 
     _refresh() {
-        this._removeDevicesFromMenu();
-        this._addDevicesToMenu();
+        if (this._refreshTimeout) {
+            GLib.Source.remove(this._refreshTimeout);
+        }
 
-        this._logger.info('Refreshing devices list');
+        this._tryRefresh();
     }
 
     _addDevicesToMenu() {
@@ -196,6 +227,10 @@ class BluetoothQuickConnect {
     }
 
     _destroy() {
+        if (this._refreshTimeout) {
+            GLib.Source.remove(this._refreshTimeout);
+        }
+
         this._disconnectSignals();
         this._removeDevicesFromMenu();
         this._disconnectIdleMonitor();

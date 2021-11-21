@@ -69,7 +69,7 @@ function addSignalsHelperMethods(prototype) {
             subject: subject,
             signal_id: signal_id
         });
-    }
+    };
 
     prototype._disconnectSignals = function () {
         if (!this._signals) return;
@@ -79,4 +79,18 @@ function addSignalsHelperMethods(prototype) {
         });
         this._signals = [];
     };
+
+    prototype._disconnectSubjectSignals = function(subject) {
+        if (!this._signals) return;
+
+        this._signals = this._signals.filter( signal => {
+            if (signal.subject == subject) {
+                signal.subject.disconnect(signal.signal_id);
+
+                return false;
+            }
+
+            return true;
+        });
+    }
 }

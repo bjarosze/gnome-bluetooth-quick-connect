@@ -48,9 +48,9 @@ var BluetoothController = class {
 
     getDevices() {
         let adapter = this._getDefaultAdapter();
-        if (!adapter)
-            return [];
-
+        if (!adapter) {
+            throw 'No available adapter';
+        }
         let devices = [];
 
         let [ret, iter] = this._model.iter_children(adapter);
@@ -63,8 +63,16 @@ var BluetoothController = class {
         return devices;
     }
 
+    getDevicesOrEmpty() {
+        try {
+            return this.getDevices();
+        } catch {
+            return [];
+        }
+    }
+
     getConnectedDevices() {
-        return this.getDevices().filter((device) => {
+        return this.getDevicesOrEmpty().filter((device) => {
             return device.isConnected;
         });
     }
