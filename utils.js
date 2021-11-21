@@ -83,15 +83,14 @@ function addSignalsHelperMethods(prototype) {
     prototype._disconnectSubjectSignals = function(subject) {
         if (!this._signals) return;
 
-        const newSignalList = [];
-        this._signals.forEach( signal => {
+        this._signals = this._signals.filter( signal => {
             if (signal.subject == subject) {
                 signal.subject.disconnect(signal.signal_id);
-            } else {
-                newSignalList.push(signal);
-            }
-        });
 
-        this._signals = newSignalList;
+                return false;
+            }
+
+            return true;
+        });
     }
 }
