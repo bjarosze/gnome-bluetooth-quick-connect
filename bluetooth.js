@@ -31,7 +31,12 @@ var BluetoothController = class {
         this._connectSignal(this._model, 'row-changed', (arg0, arg1, iter) => {
             if (iter) {
                 let device = this._buildDevice(iter);
-                this.emit('device-changed', device);
+                if (device.isDefault) {
+                    this.emit('default-adapter-changed', device);
+                }
+                else {
+                    this.emit('device-changed', device);
+                }
             }
 
         });
