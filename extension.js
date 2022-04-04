@@ -82,6 +82,11 @@ class BluetoothQuickConnect {
     _connectControllerSignals() {
         this._logger.info('Connecting bluetooth controller signals');
 
+        this._connectSignal(this._controller, 'default-adapter-changed', (ctrl) => {
+            this._logger.info('Default adapter changed event');
+            this._refresh();
+        });
+
         this._connectSignal(this._controller, 'device-inserted', (ctrl, device) => {
             this._logger.info(`Device inserted event: ${device.name}`);
             if (device.isPaired) {
@@ -93,9 +98,7 @@ class BluetoothQuickConnect {
 
         this._connectSignal(this._controller, 'device-changed', (ctrl, device) => {
             this._logger.info(`Device changed event: ${device.name}`);
-            if (device.isDefault)
-                this._refresh();
-            else if (device.isPaired)
+            if (device.isPaired)
                 this._syncMenuItem(device);
             else
                 this._logger.info(`Skipping change event for unpaired device ${device.name}`);
