@@ -224,4 +224,5 @@ function enable() {
 
 function disable() {
     bluetoothQuickConnect.disable();
+    bluetoothQuickConnect = null;
 }
