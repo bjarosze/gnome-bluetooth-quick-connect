@@ -20,7 +20,12 @@ const GLib = imports.gi.GLib;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const UiExtension = Me.imports.ui;
-const Bluetooth = Me.imports.bluetooth;
+
+const GnomeBluetooth = imports.gi.GnomeBluetooth;
+const Bluetooth = new GnomeBluetooth.Client().get_devices === undefined ?
+    Me.imports.bluetooth_legacy :
+    Me.imports.bluetooth;
+
 const Utils = Me.imports.utils;
 const Settings = Me.imports.settings.Settings;
 const BatteryProvider = Me.imports.power.UPowerBatteryProvider;
