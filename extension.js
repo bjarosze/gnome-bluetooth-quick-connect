@@ -21,8 +21,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const UiExtension = Me.imports.ui;
 
-const GnomeBluetooth = imports.gi.GnomeBluetooth;
-const Bluetooth = new GnomeBluetooth.Client().get_devices === undefined ?
+const Bluetooth = imports.gi.GnomeBluetooth.Client.prototype.get_devices === undefined ?
     Me.imports.bluetooth_legacy :
     Me.imports.bluetooth;
 
