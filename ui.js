@@ -51,6 +51,9 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this.insert_child_at_index(this._refreshButton, this.get_n_children() - 1);
             this.add_child(this._pendingLabel);
 
+            this.label.y_expand = true;
+            this.label.y_align = Clutter.ActorAlign.CENTER;
+            
             this.sync(device);
         }
 
