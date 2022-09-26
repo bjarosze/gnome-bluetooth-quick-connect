@@ -35,16 +35,16 @@ class BluetoothQuickConnect {
         this._logger = new Utils.Logger(settings);
         this._logger.info('Initializing extension');
         if (quickSettings) {
-            this._quickSettings = quickSettings;
-            this._btIndicator = quickSettings._bluetooth;
-            let oldItem = this._btIndicator.quickSettingsItems[0];
+            let btIndicator = quickSettings._bluetooth;
+            let oldItem = btIndicator.quickSettingsItems[0];
             let newItem = new Me.imports.quickSettings.BluetoothToggleMenu(oldItem);
-            this._btIndicator.quickSettingsItems = [newItem];
+
+            btIndicator.quickSettingsItems = [newItem];
             quickSettings.menu.addItem(newItem);
             quickSettings.menu._grid.set_child_below_sibling(newItem, oldItem);
             quickSettings.menu._grid.remove_child(oldItem);
             this._proxy = oldItem._client._proxy;
-            this._menu = newItem.menu;
+            this._menu = newItem.itemsSection;
         } else {
             this._menu = bluetooth._item.menu;
             this._proxy = bluetooth._proxy;
