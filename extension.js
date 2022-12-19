@@ -154,7 +154,7 @@ class BluetoothQuickConnect {
         );
 
         this._items[device.mac] = menuItem;
-        this._menu.addMenuItem(menuItem, 1);
+        this._menu.addMenuItem(menuItem);
 
         return menuItem;
     }
@@ -197,7 +197,9 @@ class BluetoothQuickConnect {
     }
 
     _addDevicesToMenu() {
-        this._controller.getDevices().forEach((device) => {
+        this._controller.getDevices().sort((a, b) => {
+            return a.name.localeCompare(b.name);
+        }).forEach((device) => {
             if (device.isPaired) {
                 let item = this._addMenuItem(device);
             } else {
