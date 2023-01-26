@@ -6,6 +6,13 @@
 
 /* exported BluetoothToggleMenu */
 
+
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
+
+const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const _ = Gettext.gettext;
+
 const PopupMenu = imports.ui.popupMenu;
 
 const {GObject} = imports.gi;
@@ -33,7 +40,7 @@ class BluetoothToggleMenu extends QuickMenuToggle {
         this.itemsSection = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(this.itemsSection);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this.menu.addSettingsAction(_('Bluetooth Settings'), 'gnome-bluetooth-panel.desktop');
+        this.menu.addSettingsAction(_("Bluetooth Settings"), 'gnome-bluetooth-panel.desktop');
     }
 });
 
