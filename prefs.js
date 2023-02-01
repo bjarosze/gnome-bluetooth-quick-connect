@@ -5,13 +5,12 @@
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 
-const Gettext = imports.gettext.domain('gnome-shell-extensions');
-const _ = Gettext.gettext;
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings.Settings;
 
+const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const _ = Gettext.gettext;
 
 class SettingsBuilder {
     constructor() {
@@ -79,6 +78,7 @@ class SettingsBuilder {
 }
 
 function init() {
+    ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
 }
 
 function buildPrefsWidget() {

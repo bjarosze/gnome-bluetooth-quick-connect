@@ -15,6 +15,12 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
+
+const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const _ = Gettext.gettext;
+
 const Clutter = imports.gi.Clutter;
 const GObject = imports.gi.GObject;
 const St = imports.gi.St;
@@ -188,7 +194,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
         }
 
         _buildPendingLabel() {
-            let label = new St.Label({text: _('Wait')});
+            let label = new St.Label({text: _("Wait")});
             label.hide();
 
             return label;

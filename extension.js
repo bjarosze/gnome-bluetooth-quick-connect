@@ -21,6 +21,9 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const UiExtension = Me.imports.ui;
 
+const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const _ = Gettext.gettext;
+
 const Bluetooth = imports.gi.GnomeBluetooth.Client.prototype.get_devices === undefined ?
     Me.imports.bluetooth_legacy :
     Me.imports.bluetooth;
@@ -91,7 +94,7 @@ class BluetoothQuickConnect {
             GLib.spawn_command_line_sync("bluetoothctl --version");
             this._logger.info('Test succeeded');
         } catch (error) {
-            Main.notifyError(_('Bluetooth Quick Connect'), _(`Error trying to execute "bluetoothctl"`));
+            Main.notifyError(_("Bluetooth Quick Connect"), _("Error trying to execute \"bluetoothctl\""));
             this._logger.info('Test failed');
         }
     }
@@ -230,7 +233,9 @@ Utils.addSignalsHelperMethods(BluetoothQuickConnect.prototype);
 
 let bluetoothQuickConnect = null;
 
-function init() {}
+function init() {
+    ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
+}
 
 function enable() {
     if (Main.panel.statusArea.quickSettings) {

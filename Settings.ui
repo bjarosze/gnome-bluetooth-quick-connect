@@ -5,7 +5,7 @@ Copyright 2018 Bartosz Jaroszewski
 SPDX-License-Identifier: GPL-2.0-or-later
 (see extension.js for details)
 -->
-<interface>
+<interface domain="bluetooth-quick-connect">
   <requires lib="gtk+" version="3.12" />
   <object class="GtkAdjustment" id="auto_power_off_interval_adjustment">
     <property name="lower">1</property>
