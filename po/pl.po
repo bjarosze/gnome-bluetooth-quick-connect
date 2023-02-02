@@ -1,7 +1,7 @@
 # Spanish translation for Bluetooth Quick Connect.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Óscar Fernández Díaz <42654671+oscfdezdz@users.noreply.github.com>, 2023.
+# Bartosz Jaroszewski, 2023.
 #
 msgid ""
 msgstr ""
@@ -9,10 +9,9 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-01-26 17:25+0100\n"
 "PO-Revision-Date: 2023-01-26 17:28+0100\n"
-"Last-Translator: Óscar Fernández Díaz <42654671+oscfdezdz@users.noreply."
-"github.com>\n"
+"Last-Translator: Bartosz Jaroszewski\n"
 "Language-Team: \n"
-"Language: es\n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
