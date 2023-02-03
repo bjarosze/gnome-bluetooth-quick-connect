@@ -259,7 +259,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 var BatteryInfoWidget = GObject.registerClass(
     class BatteryInfoWidget extends St.BoxLayout {
         _init(showBatteryValue, showBatteryIcon) {
-            super._init({ visible: false });
+            super._init({ visible: false, style: 'spacing: 3px;' });
             this._icon = new St.Icon({ style_class: 'popup-menu-icon' });
             this.add_child(this._icon);
             this._icon.icon_name = null;
