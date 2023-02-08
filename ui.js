@@ -259,19 +259,23 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 var BatteryInfoWidget = GObject.registerClass(
     class BatteryInfoWidget extends St.BoxLayout {
         _init(showBatteryValue, showBatteryIcon) {
-            super._init({ visible: false });
+            super._init({ visible: false, style: 'spacing: 3px;' });
             this._icon = new St.Icon({ style_class: 'popup-menu-icon' });
             this.add_child(this._icon);
             this._icon.icon_name = null;
 
             // dirty trick: instantiate the label with text 100%, so we can set
             // the natural width of the label in case monospace has no effect
-            this._label = new St.Label({ y_expand: false, style_class: 'monospace', text: '100%' });
+            this._label = new St.Label({
+                x_align: Clutter.ActorAlign.START,
+                y_align: Clutter.ActorAlign.CENTER,
+                style_class: 'monospace',
+                text: '100%'
+            });
+
             this._label.natural_width = this._label.width;
             this._label.text = "";
 
-            this._label.x_expand = false;
-            this._label.x_align = Clutter.ActorAlign.LEFT;
             this.add_child(this._label);
 
             if (!showBatteryValue) this._label.hide();
