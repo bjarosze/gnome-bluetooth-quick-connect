@@ -132,10 +132,6 @@ class BluetoothQuickConnect {
             this._logger.info(`Device deleted event`);
             this._refresh();
         });
-
-        this._connectSignal(Main.sessionMode, 'updated', () => {
-            this._refresh();
-        });
     }
 
     _syncMenuItem(device) {
