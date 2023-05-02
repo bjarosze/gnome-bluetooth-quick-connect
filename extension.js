@@ -32,6 +32,8 @@ const Utils = Me.imports.utils;
 const Settings = Me.imports.settings.Settings;
 const BatteryProvider = Me.imports.power.UPowerBatteryProvider;
 
+const PopupMenu = imports.ui.popupMenu;
+
 
 class BluetoothQuickConnect {
     constructor(quickSettings, bluetooth, settings) {
@@ -39,15 +41,17 @@ class BluetoothQuickConnect {
         this._logger.info('Initializing extension');
         if (quickSettings) {
             let btIndicator = quickSettings._bluetooth;
-            let oldItem = btIndicator.quickSettingsItems[0];
-            let newItem = new Me.imports.quickSettings.BluetoothToggleMenu(oldItem);
+            let bluetoothToggle = btIndicator.quickSettingsItems[0];
+            bluetoothToggle._updateDeviceVisibility = () => {
+                bluetoothToggle._deviceSection.actor.visible = false;
+                bluetoothToggle._placeholderItem.actor.visible = false;
+            }
+            bluetoothToggle._updateDeviceVisibility();
 
-            btIndicator.quickSettingsItems = [newItem];
-            quickSettings.menu.addItem(newItem);
-            quickSettings.menu._grid.set_child_below_sibling(newItem, oldItem);
-            quickSettings.menu._grid.remove_child(oldItem);
-            this._proxy = oldItem._client._proxy;
-            this._menu = newItem.itemsSection;
+            this._proxy = bluetoothToggle._client._proxy;
+            this._menu = new PopupMenu.PopupMenuSection();
+
+            bluetoothToggle.menu.addMenuItem(this._menu, 0);
         } else {
             this._menu = bluetooth._item.menu;
             this._proxy = bluetooth._proxy;
