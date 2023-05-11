@@ -32,6 +32,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
         _init(device, batteryProvider, logger, params) {
             let label = device.name || '(unknown)';
             super._init(label, device.isConnected, {});
+            this._handleIcon(device);
 
             this._logger = logger;
 
@@ -58,6 +59,16 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this.add_child(this._pendingLabel);
 
             this.sync(device);
+        }
+
+        _handleIcon(device) {
+            if (!device.icon) return;
+
+            let deviceIcon = new St.Icon({
+                style_class: "popup-menu-icon",
+                icon_name: device.icon,
+            });
+            this.insert_child_at_index(deviceIcon, 1);
         }
 
         _tryLocateBatteryWithTimeout(count = 10) {
