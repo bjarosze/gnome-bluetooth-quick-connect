@@ -90,6 +90,7 @@ var BluetoothDevice = class {
 
     update(dev) {
         this.name = dev.alias || dev.name;
+        this.icon = dev.icon;
         this.isConnected = dev.connected;
         this.isPaired = dev.paired;
         this.mac = dev.address;
