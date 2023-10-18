@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Gio = imports.gi.Gio;
+import Gio from "gi://Gio";
 const GioSSS = Gio.SettingsSchemaSource;
 
-var Settings = class Settings {
-    constructor() {
+export class Settings {
+    constructor(metadata) {
+        this.metadata = metadata;
         this.settings = this._loadSettings();
     }
 
@@ -56,11 +56,10 @@ var Settings = class Settings {
     }
 
     _loadSettings() {
-        let extension = ExtensionUtils.getCurrentExtension();
-        let schema = extension.metadata['settings-schema'];
+        let schema = this.metadata['settings-schema'];
 
         let schemaSource = GioSSS.new_from_directory(
-            extension.dir.get_child('schemas').get_path(),
+            this.metadata.path + "/schemas",
             GioSSS.get_default(),
             false
         );

@@ -14,53 +14,73 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-const Main = imports.ui.main;
-const GLib = imports.gi.GLib;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const UiExtension = Me.imports.ui;
+import * as Main from "resource:///org/gnome/shell/ui/main.js";
+import GLib from "gi://GLib";
 
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
+import * as UiExtension from "./ui.js";
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
-const Bluetooth = imports.gi.GnomeBluetooth.Client.prototype.get_devices === undefined ?
-    Me.imports.bluetooth_legacy :
-    Me.imports.bluetooth;
+import GnomeBluetooth from "gi://GnomeBluetooth";
+import * as bluetooth from "./bluetooth.js";
+import * as bluetooth_legacy from "./bluetooth_legacy.js";
+const Bluetooth = GnomeBluetooth.Client.prototype.get_devices === undefined ? bluetooth_legacy : bluetooth;
 
-const Utils = Me.imports.utils;
-const Settings = Me.imports.settings.Settings;
-const BatteryProvider = Me.imports.power.UPowerBatteryProvider;
+import * as Utils from "./utils.js";
+import { Settings } from "./settings.js";
+import { UPowerBatteryProvider as BatteryProvider } from "./power.js";
 
-const PopupMenu = imports.ui.popupMenu;
+import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
+
+export default class BluetoothQuickConnect extends Extension {
+    constructor(metadata) {
+        super(metadata);
+
+        this.quickSettings = Main.panel.statusArea.quickSettings;
+        this.bluetooth = this.quickSettings ? null : Main.panel.statusArea.aggregateMenu._bluetooth;
+        this._settings = new Settings(this.metadata);
 
 
-class BluetoothQuickConnect {
-    constructor(quickSettings, bluetooth, settings) {
-        this._logger = new Utils.Logger(settings);
+        this._logger = new Utils.Logger(this._settings);
         this._logger.info('Initializing extension');
-        if (quickSettings) {
-            let btIndicator = quickSettings._bluetooth;
-            let bluetoothToggle = btIndicator.quickSettingsItems[0];
-            bluetoothToggle._updateDeviceVisibility = () => {
-                bluetoothToggle._deviceSection.actor.visible = false;
-                bluetoothToggle._placeholderItem.actor.visible = false;
-            }
-            bluetoothToggle._updateDeviceVisibility();
 
-            this._proxy = bluetoothToggle._client._proxy;
-            this._menu = new PopupMenu.PopupMenuSection();
-
-            bluetoothToggle.menu.addMenuItem(this._menu, 0);
-        } else {
-            this._menu = bluetooth._item.menu;
-            this._proxy = bluetooth._proxy;
-        }
+        this._init();
         this._controller = new Bluetooth.BluetoothController();
-        this._settings = settings;
         this._battery_provider = new BatteryProvider(this._logger);
-
+        this._menu = new PopupMenu.PopupMenuSection();
         this._items = {};
+    }
+
+    _init() {
+        if (this.quickSettings._bluetooth) {
+            this._modify();
+        } else {
+            this._queueModify();
+        }
+    }
+
+    _modify() {
+        let btIndicator = this.quickSettings._bluetooth;
+        let bluetoothToggle = btIndicator.quickSettingsItems[0];
+        bluetoothToggle._updateDeviceVisibility = () => {
+            bluetoothToggle._deviceSection.actor.visible = false;
+            bluetoothToggle._placeholderItem.actor.visible = false;
+        }
+        bluetoothToggle._updateDeviceVisibility();
+
+        this._proxy = bluetoothToggle._client._proxy;
+
+        bluetoothToggle.menu.addMenuItem(this._menu, 0);
+    }
+
+    _queueModify() {
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            if (!Main.panel.statusArea.quickSettings._system) {
+                return GLib.SOURCE_CONTINUE;
+            }
+            this._modify();
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     enable() {
@@ -230,33 +250,3 @@ class BluetoothQuickConnect {
 }
 
 Utils.addSignalsHelperMethods(BluetoothQuickConnect.prototype);
-
-let bluetoothQuickConnect = null;
-
-function init() {
-    ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
-}
-
-function enable() {
-    if (Main.panel.statusArea.quickSettings) {
-        bluetoothQuickConnect = new BluetoothQuickConnect(
-            Main.panel.statusArea.quickSettings,
-            null,
-            new Settings()
-        );
-    } else {
-        bluetoothQuickConnect = new BluetoothQuickConnect(
-            null,
-            Main.panel.statusArea.aggregateMenu._bluetooth,
-            new Settings()
-        );
-    }
-
-    bluetoothQuickConnect.test();
-    bluetoothQuickConnect.enable();
-}
-
-function disable() {
-    bluetoothQuickConnect.disable();
-    bluetoothQuickConnect = null;
-}

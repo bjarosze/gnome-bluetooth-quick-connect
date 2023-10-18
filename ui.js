@@ -14,20 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import Clutter from "gi://Clutter";
+import GObject from "gi://GObject";
+import St from "gi://St";
+import GLib from "gi://GLib";
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
-
-const Clutter = imports.gi.Clutter;
-const GObject = imports.gi.GObject;
-const St = imports.gi.St;
-const GLib = imports.gi.GLib;
-const PopupMenu = imports.ui.popupMenu;
-
-var PopupBluetoothDeviceMenuItem = GObject.registerClass(
+export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
     class PopupSwitchWithButtonMenuItem extends PopupMenu.PopupSwitchMenuItem {
         _init(device, batteryProvider, logger, params) {
             let label = device.name || '(unknown)';
@@ -164,24 +158,24 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
             let button = new St.Button({
                 child: icon,
-                x_align: St.Align.END
+                x_align: 2 // Align.END
             });
 
             button.connect("enter-event", (widget) => {
-                    widget.child.ease( {
-                        opacity: 255,
-                        time: 0.05,
-                        transition: Clutter.AnimationMode.LINEAR
-                    }
+                widget.child.ease({
+                    opacity: 255,
+                    time: 0.05,
+                    transition: Clutter.AnimationMode.LINEAR
+                }
                 );
             });
 
             button.connect("leave-event", (widget) => {
-                    widget.child.ease( {
-                        opacity: 155,
-                        time: 0.05,
-                        transition: Clutter.AnimationMode.LINEAR
-                    }
+                widget.child.ease({
+                    opacity: 155,
+                    time: 0.05,
+                    transition: Clutter.AnimationMode.LINEAR
+                }
                 );
             });
 
@@ -205,7 +199,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
         }
 
         _buildPendingLabel() {
-            let label = new St.Label({text: _("Wait")});
+            let label = new St.Label({ text: _("Wait") });
             label.hide();
 
             return label;
@@ -267,7 +261,7 @@ var PopupBluetoothDeviceMenuItem = GObject.registerClass(
     }
 );
 
-var BatteryInfoWidget = GObject.registerClass(
+export const BatteryInfoWidget = GObject.registerClass(
     class BatteryInfoWidget extends St.BoxLayout {
         _init(showBatteryValue, showBatteryIcon) {
             super._init({ visible: false, style: 'spacing: 3px;' });

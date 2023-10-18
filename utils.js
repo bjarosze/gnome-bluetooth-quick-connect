@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-const GLib = imports.gi.GLib;
+import GLib from "gi://GLib";
 
-function spawn(command, callback) {
+export function spawn(command, callback) {
     let [status, pid] = GLib.spawn_async(
         null,
         ['/usr/bin/env', 'bash', '-c', command],
         null,
-        GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+        4 | 2, // GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
         null
     );
 
@@ -39,14 +39,9 @@ function spawn(command, callback) {
         });
 }
 
-
-function isDebugModeEnabled() {
-    return new Settings().isDebugModeEnabled();
-}
-
-var Logger = class Logger {
+export class Logger {
     constructor(settings) {
-        this._enabled = settings.isDebugModeEnabled();
+        this._enabled = true;
     }
 
     info(message) {
@@ -60,7 +55,7 @@ var Logger = class Logger {
     }
 };
 
-function addSignalsHelperMethods(prototype) {
+export function addSignalsHelperMethods(prototype) {
     prototype._connectSignal = function (subject, signal_name, method) {
         if (!this._signals) this._signals = [];
 

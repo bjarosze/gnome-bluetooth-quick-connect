@@ -14,14 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-const GnomeBluetooth = imports.gi.GnomeBluetooth;
+import GnomeBluetooth from "gi://GnomeBluetooth";
 const Signals = imports.signals;
-const GLib = imports.gi.GLib;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Utils = Me.imports.utils;
+import * as Utils from "./utils.js";
 
-var BluetoothController = class {
+export class BluetoothController {
     constructor() {
         this._client = new GnomeBluetooth.Client();
         this._deviceNotifyConnected = new Set();
@@ -83,7 +80,7 @@ var BluetoothController = class {
 Signals.addSignalMethods(BluetoothController.prototype);
 Utils.addSignalsHelperMethods(BluetoothController.prototype);
 
-var BluetoothDevice = class {
+export class BluetoothDevice {
     constructor(dev) {
         this.update(dev);
     }

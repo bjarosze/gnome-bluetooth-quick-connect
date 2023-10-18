@@ -4,6 +4,9 @@ This extension allows paired Bluetooth devices to be connected and
 disconnected via the GNOME system menu, without need to enter the
 Settings app every time.
 
+## Experimental Gnome 45 Support
+> I have added Gnome 45 Support to this extension, It is highly un-optimized and you may encounter some issues while trying it. Feedback about this is appreciated. Clean ups and optimizations will be done soon.
+
 ## Installation
 
 ### Requirements

@@ -1,9 +1,6 @@
-const ExtensionUtils = imports.misc.extensionUtils;
-const UPower = imports.gi.UPowerGlib;
-const Me = ExtensionUtils.getCurrentExtension();
-const Utils = Me.imports.utils;
+import UPower from "gi://UPowerGlib";
 
-var UPowerBatteryProvider = class {
+export class UPowerBatteryProvider {
     constructor(logger) {
         this._upower_client = UPower.Client.new();
         this._logger = logger;
