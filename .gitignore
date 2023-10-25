@@ -2,3 +2,4 @@
 /schemas/gschemas.compiled
 /.gnome-shell
 /bluetooth-quick-connect@bjarosze.gmail.com.shell-extension.zip
+/po/*.mo

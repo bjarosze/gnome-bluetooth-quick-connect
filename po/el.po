@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-26 17:28+0100\n"
-"PO-Revision-Date: 2023-03-23 15:46+0200\n"
+"POT-Creation-Date: 2023-10-25 14:57+0530\n"
+"PO-Revision-Date: 2023-10-25 15:01+0530\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: el\n"
@@ -16,21 +16,17 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.3.2\n"
 
-#: extension.js:97
+#: extension.js:121
 msgid "Bluetooth Quick Connect"
 msgstr "Γρήγορη σύνδεση Bluetooth"
 
-#: extension.js:97
+#: extension.js:121
 msgid "Error trying to execute \"bluetoothctl\""
 msgstr "Σφάλμα κατά την προσπάθεια εκτέλεσης του \"bluetoothctl\""
 
-#: quickSettings.js:43
-msgid "Bluetooth Settings"
-msgstr "Ρυθμίσεις Bluetooth"
-
-#: ui.js:197
+#: ui.js:202
 msgid "Wait"
 msgstr "Αναμονή"
 
