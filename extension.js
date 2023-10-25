@@ -44,33 +44,12 @@ export default class BluetoothQuickConnect extends Extension {
         this._logger = new Utils.Logger(this._settings);
         this._logger.info('Initializing extension');
 
-        this._init();
         this._controller = new Bluetooth.BluetoothController();
         this._battery_provider = new BatteryProvider(this._logger);
         this._menu = new PopupMenu.PopupMenuSection();
         this._items = {};
-    }
 
-    _init() {
-        if (this.quickSettings._bluetooth) {
-            this._modify();
-        } else {
-            this._queueModify();
-        }
-    }
-
-    _modify() {
-        let btIndicator = this.quickSettings._bluetooth;
-        let bluetoothToggle = btIndicator.quickSettingsItems[0];
-        bluetoothToggle._updateDeviceVisibility = () => {
-            bluetoothToggle._deviceSection.actor.visible = false;
-            bluetoothToggle._placeholderItem.actor.visible = false;
-        }
-        bluetoothToggle._updateDeviceVisibility();
-
-        this._proxy = bluetoothToggle._client._proxy;
-
-        bluetoothToggle.menu.addMenuItem(this._menu, 0);
+        this._queueModify();
     }
 
     _queueModify() {
@@ -78,7 +57,17 @@ export default class BluetoothQuickConnect extends Extension {
             if (!Main.panel.statusArea.quickSettings._system) {
                 return GLib.SOURCE_CONTINUE;
             }
-            this._modify();
+            let btIndicator = this.quickSettings._bluetooth;
+            let bluetoothToggle = btIndicator.quickSettingsItems[0];
+            bluetoothToggle._updateDeviceVisibility = () => {
+                bluetoothToggle._deviceSection.actor.visible = false;
+                bluetoothToggle._placeholderItem.actor.visible = false;
+            }
+            bluetoothToggle._updateDeviceVisibility();
+
+            this._proxy = bluetoothToggle._client._proxy;
+
+            bluetoothToggle.menu.addMenuItem(this._menu, 0);
             return GLib.SOURCE_REMOVE;
         });
     }
