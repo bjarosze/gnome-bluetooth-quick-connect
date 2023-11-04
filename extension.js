@@ -74,6 +74,7 @@ export default class BluetoothQuickConnect extends Extension {
 
     enable() {
         this._logger.info('Enabling extension');
+        this.test_bluetoothctl();
         this._controller.enable();
         this._refresh();
         this._connectControllerSignals();
@@ -101,7 +102,7 @@ export default class BluetoothQuickConnect extends Extension {
         this._destroy();
     }
 
-    test() {
+    test_bluetoothctl() {
         try {
             this._logger.info('Testing bluetoothctl');
             GLib.spawn_command_line_sync("bluetoothctl --version");
