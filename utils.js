@@ -17,7 +17,7 @@
 import GLib from "gi://GLib";
 
 export function spawn(command, callback) {
-    let [status, pid] = GLib.spawn_async(
+    let [_status, pid] = GLib.spawn_async(
         null,
         ['/usr/bin/env', 'bash', '-c', command],
         null,
@@ -41,20 +41,20 @@ export function spawn(command, callback) {
 
 export class Logger {
     constructor(settings) {
-        this._enabled = true;
+        this._enabled = settings.isDebugModeEnabled();
     }
 
     info(message) {
         if (!this._enabled) return;
-
-        log(`[bluetooth-quick-connect] ${message}`);
+        console.info(`[bluetooth-quick-connect] ${message}`);
     }
 
     warn(message) {
-        log(`[bluetooth-quick-connect WARNING] ${message}`);
+        console.warn(`[bluetooth-quick-connect WARNING] ${message}`);
     }
 };
 
+// FIXME: Not sure what to do with this yet
 export function addSignalsHelperMethods(prototype) {
     prototype._connectSignal = function (subject, signal_name, method) {
         if (!this._signals) this._signals = [];

@@ -27,8 +27,8 @@ import * as bluetooth_legacy from "./bluetooth_legacy.js";
 const Bluetooth = GnomeBluetooth.Client.prototype.get_devices === undefined ? bluetooth_legacy : bluetooth;
 
 import * as Utils from "./utils.js";
-import { Settings } from "./settings.js";
-import { UPowerBatteryProvider as BatteryProvider } from "./power.js";
+import Settings from "./settings.js";
+import BatteryProvider from "./power.js";
 
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
@@ -38,8 +38,7 @@ export default class BluetoothQuickConnect extends Extension {
 
         this.quickSettings = Main.panel.statusArea.quickSettings;
         this.bluetooth = this.quickSettings ? null : Main.panel.statusArea.aggregateMenu._bluetooth;
-        this._settings = new Settings(this.metadata);
-
+        this._settings = new Settings(this);
 
         this._logger = new Utils.Logger(this._settings);
         this._logger.info('Initializing extension');
@@ -54,7 +53,7 @@ export default class BluetoothQuickConnect extends Extension {
 
     _queueModify() {
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            if (!Main.panel.statusArea.quickSettings._system) {
+            if (!Main.panel.statusArea.quickSettings._bluetooth) {
                 return GLib.SOURCE_CONTINUE;
             }
             let btIndicator = this.quickSettings._bluetooth;

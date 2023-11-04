@@ -1,6 +1,6 @@
 import UPower from "gi://UPowerGlib";
 
-export class UPowerBatteryProvider {
+export default class UPowerBatteryProvider {
     constructor(logger) {
         this._upower_client = UPower.Client.new();
         this._logger = logger;

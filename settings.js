@@ -14,13 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import Gio from "gi://Gio";
-const GioSSS = Gio.SettingsSchemaSource;
-
-export class Settings {
-    constructor(metadata) {
-        this.metadata = metadata;
-        this.settings = this._loadSettings();
+export default class Settings {
+    constructor(extension) {
+        this.settings = extension.getSettings();
     }
 
     isAutoPowerOnEnabled() {
@@ -53,19 +49,5 @@ export class Settings {
 
     isShowBatteryIconEnabled() {
         return this.settings.get_boolean('show-battery-icon-on');
-    }
-
-    _loadSettings() {
-        let schema = this.metadata['settings-schema'];
-
-        let schemaSource = GioSSS.new_from_directory(
-            this.metadata.path + "/schemas",
-            GioSSS.get_default(),
-            false
-        );
-
-        let schemaObj = schemaSource.lookup(schema, true);
-
-        return new Gio.Settings({ settings_schema: schemaObj });
     }
 };
