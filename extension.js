@@ -128,9 +128,9 @@ export default class BluetoothQuickConnect extends Extension {
                 this._logger.log(`Skipping change event for unpaired device ${device.name}`);
         });
 
-        this._connectSignal(this._controller, 'device-deleted', () => {
+        this._connectSignal(this._controller, 'device-deleted', (_ctrl, skipDevicePath) => {
             this._logger.log(`Device deleted event`);
-            this._refresh();
+            this._refresh(skipDevicePath);
         });
     }
 
@@ -204,18 +204,18 @@ export default class BluetoothQuickConnect extends Extension {
         this._signals = [];
     }
 
-    _refresh() {
+    _refresh(skipDevice = null) {
         this._removeDevicesFromMenu();
-        this._addDevicesToMenu();
+        this._addDevicesToMenu(skipDevice);
 
         this._logger.log('Refreshing devices list');
     }
 
-    _addDevicesToMenu() {
+    _addDevicesToMenu(skipDevice = null) {
         this._controller.getDevices().sort((a, b) => {
             return a.name.localeCompare(b.name);
         }).forEach((device) => {
-            if (device.isPaired) {
+            if (device.isPaired && device.object_path !== skipDevice) {
                 this._addMenuItem(device);
             } else {
                 this._logger.log(`skipping adding device ${device.name}`);

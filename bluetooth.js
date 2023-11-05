@@ -37,7 +37,7 @@ export class BluetoothController extends Signals.EventEmitter {
         });
         this._connectSignal(this._client, 'device-removed', (c, path) => {
             this._deviceNotifyConnected.delete(path);
-            this.emit('device-deleted');
+            this.emit('device-deleted', path);
         });
         this._connectSignal(this._client, 'device-added', (c, device) => {
             this._connectDeviceNotify(device);
@@ -107,6 +107,7 @@ export class BluetoothDevice {
         this.isConnected = dev.connected;
         this.isPaired = dev.paired;
         this.mac = dev.address;
+        this.object_path = dev.get_object_path();
     }
 
     disconnect() {

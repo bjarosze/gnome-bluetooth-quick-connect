@@ -74,7 +74,7 @@ export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
                 GLib.PRIORITY_DEFAULT,
                 1000,
                 () => {
-                    this._logger.log(`Looking up battery info for ${device.name}`);
+                    this._logger.log(`Looking up battery info for ${device.name}. Trial Left: ${count}`);
                     let optBat = this._batteryProvider.locateBatteryDevice(device);
 
                     if (optBat.length) {
