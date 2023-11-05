@@ -22,7 +22,6 @@ import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/
 import { BluetoothController } from "./bluetooth.js";
 import { Logger } from "./utils.js";
 import Settings from "./settings.js";
-import BatteryProvider from "./power.js";
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
 export default class BluetoothQuickConnect extends Extension {
@@ -35,7 +34,6 @@ export default class BluetoothQuickConnect extends Extension {
         this._logger.log('Initializing extension');
 
         this._controller = new BluetoothController();
-        this._battery_provider = new BatteryProvider(this._logger);
         this._menu = new PopupMenu.PopupMenuSection();
         this._items = {};
 
@@ -64,7 +62,6 @@ export default class BluetoothQuickConnect extends Extension {
 
     enable() {
         this._logger.log('Enabling extension');
-        this._test_bluetoothctl();
         this._controller.enable();
         this._refresh();
         this._connectControllerSignals();
@@ -92,17 +89,6 @@ export default class BluetoothQuickConnect extends Extension {
         this._destroy();
     }
 
-    _test_bluetoothctl() {
-        try {
-            this._logger.log('Testing bluetoothctl');
-            GLib.spawn_command_line_sync("bluetoothctl --version");
-            this._logger.log('Test succeeded');
-        } catch (error) {
-            Main.notifyError(_("Bluetooth Quick Connect"), _("Error trying to execute \"bluetoothctl\""));
-            this._logger.log('Test failed');
-        }
-    }
-
     _connectControllerSignals() {
         this._logger.log('Connecting bluetooth controller signals');
 
@@ -112,20 +98,21 @@ export default class BluetoothQuickConnect extends Extension {
         });
 
         this._connectSignal(this._controller, 'device-inserted', (_ctrl, device) => {
-            this._logger.log(`Device inserted event: ${device.name}`);
-            if (device.isPaired) {
+            this._logger.log(`Device inserted event: ${device.alias || device.name}`);
+            if (device.paired) {
                 this._addMenuItem(device);
             } else {
-                this._logger.log(`Device ${device.name} not paired, ignoring`);
+                this._logger.log(`Device ${device.alias || device.name} not paired, ignoring`);
             }
         });
 
         this._connectSignal(this._controller, 'device-changed', (_ctrl, device) => {
-            this._logger.log(`Device changed event: ${device.name}`);
-            if (device.isPaired)
+            this._logger.log(`Device changed event: ${device.alias || device.name}`);
+
+            if (device.paired)
                 this._syncMenuItem(device);
             else
-                this._logger.log(`Skipping change event for unpaired device ${device.name}`);
+                this._logger.log(`Skipping change event for unpaired device ${device.alias || device.name}`);
         });
 
         this._connectSignal(this._controller, 'device-deleted', (_ctrl, skipDevicePath) => {
@@ -135,18 +122,18 @@ export default class BluetoothQuickConnect extends Extension {
     }
 
     _syncMenuItem(device) {
-        this._logger.log(`Synchronizing device menu item: ${device.name}`);
-        let item = this._items[device.mac] || this._addMenuItem(device);
+        this._logger.log(`Synchronizing device menu item: ${device.alias || device.name}`);
+        let item = this._items[device.address] || this._addMenuItem(device);
 
         item.sync(device);
     }
 
     _addMenuItem(device) {
-        this._logger.log(`Adding device menu item: ${device.name} ${device.mac}`);
+        this._logger.log(`Adding device menu item: ${device.alias || device.name} ${device.address}`);
 
         let menuItem = new PopupBluetoothDeviceMenuItem(
+            this._controller._client,
             device,
-            this._battery_provider,
             this._logger,
             {
                 showRefreshButton: this._settings.isShowRefreshButtonEnabled(),
@@ -156,7 +143,7 @@ export default class BluetoothQuickConnect extends Extension {
             }
         );
 
-        this._items[device.mac] = menuItem;
+        this._items[device.address] = menuItem;
         this._menu.addMenuItem(menuItem);
 
         return menuItem;
@@ -215,10 +202,10 @@ export default class BluetoothQuickConnect extends Extension {
         this._controller.getDevices().sort((a, b) => {
             return a.name.localeCompare(b.name);
         }).forEach((device) => {
-            if (device.isPaired && device.object_path !== skipDevice) {
+            if (device.paired && device.get_object_path() !== skipDevice) {
                 this._addMenuItem(device);
             } else {
-                this._logger.log(`skipping adding device ${device.name}`);
+                this._logger.log(`skipping adding device ${device.alias || device.name}`);
             }
         });
     }

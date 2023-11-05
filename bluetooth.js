@@ -16,7 +16,6 @@
 
 import GnomeBluetooth from "gi://GnomeBluetooth";
 import * as Signals from 'resource:///org/gnome/shell/misc/signals.js';
-import { spawn } from "./utils.js";
 
 export class BluetoothController extends Signals.EventEmitter {
     constructor() {
@@ -41,7 +40,7 @@ export class BluetoothController extends Signals.EventEmitter {
         });
         this._connectSignal(this._client, 'device-added', (c, device) => {
             this._connectDeviceNotify(device);
-            this.emit('device-inserted', new BluetoothDevice(device));
+            this.emit('device-inserted', device);
         });
     }
 
@@ -52,7 +51,7 @@ export class BluetoothController extends Signals.EventEmitter {
 
         this._deviceNotifyConnected.add(path);
         this._connectSignal(device, 'notify', (device) => {
-            this.emit('device-changed', new BluetoothDevice(device));
+            this.emit('device-changed', device);
         });
     }
 
@@ -80,7 +79,7 @@ export class BluetoothController extends Signals.EventEmitter {
         let devices = [];
 
         for (let i = 0; i < this._store.get_n_items(); i++) {
-            let device = new BluetoothDevice(this._store.get_item(i));
+            let device = this._store.get_item(i);
             devices.push(device);
         }
 
@@ -88,37 +87,10 @@ export class BluetoothController extends Signals.EventEmitter {
     }
 
     getConnectedDevices() {
-        return this.getDevices().filter(({ isConnected }) => isConnected);
+        return this.getDevices().filter(({ connected }) => connected);
     }
 
     destroy() {
         this._disconnectSignals();
-    }
-}
-
-export class BluetoothDevice {
-    constructor(dev) {
-        this.update(dev);
-    }
-
-    update(dev) {
-        this.name = dev.alias || dev.name;
-        this.icon = dev.icon;
-        this.isConnected = dev.connected;
-        this.isPaired = dev.paired;
-        this.mac = dev.address;
-        this.object_path = dev.get_object_path();
-    }
-
-    disconnect() {
-        spawn(`bluetoothctl -- disconnect ${this.mac}`);
-    }
-
-    connect() {
-        spawn(`bluetoothctl -- connect ${this.mac}`);
-    }
-
-    reconnect() {
-        spawn(`bluetoothctl -- disconnect ${this.mac} && sleep 7 && bluetoothctl -- connect ${this.mac}`);
     }
 }

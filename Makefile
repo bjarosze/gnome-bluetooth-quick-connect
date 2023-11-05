@@ -3,8 +3,7 @@
 # (see extension.js for details)
 
 dist:
-	gnome-extensions pack -f --extra-source=bluetooth.js --extra-source=bluetooth_legacy.js \
-	--extra-source=power.js --extra-source=settings.js \
+	gnome-extensions pack -f --extra-source=bluetooth.js --extra-source=settings.js \
 	--extra-source=Settings.ui --extra-source=ui.js --extra-source=utils.js -o .
 
 clean:

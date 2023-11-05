@@ -14,29 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import GLib from "gi://GLib";
-
-export function spawn(command, callback) {
-    let [_status, pid] = GLib.spawn_async(
-        null,
-        ['/usr/bin/env', 'bash', '-c', command],
-        null,
-        GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
-        null
-    );
-
-    // ensure we always close the pid to avoid zombie processes
-    GLib.child_watch_add(
-        GLib.PRIORITY_DEFAULT, pid,
-        (_pid, _status) => {
-            try {
-                callback && callback(_pid, _status);
-            } finally {
-                GLib.spawn_close_pid(_pid);
-            }
-        });
-}
-
 export class Logger {
     constructor(settings) {
         this._enabled = settings.isDebugModeEnabled();

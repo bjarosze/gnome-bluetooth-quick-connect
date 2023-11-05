@@ -22,18 +22,14 @@ import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
 export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
     class PopupSwitchWithButtonMenuItem extends PopupMenu.PopupSwitchMenuItem {
-        _init(device, batteryProvider, logger, params) {
-            let label = device.name || '(unknown)';
-            super._init(label, device.isConnected, {});
+        _init(client, device, logger, params) {
+            let label = device.alias || device.name || '(unknown)';
+            super._init(label, device.connected, {});
             this._handleIcon(device);
 
+            this._client = client;
             this._logger = logger;
-
             this._device = device;
-            this._optBatDevice = [];
-            this._batteryProvider = batteryProvider;
-            this._batteryDeviceChangeSignal = null;
-            this._batteryDeviceLocateTimeout = null;
 
             this._showRefreshButton = params.showRefreshButton;
             this._closeMenuOnAction = params.closeMenuOnAction;
@@ -64,57 +60,7 @@ export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
             this.insert_child_at_index(deviceIcon, 1);
         }
 
-        _tryLocateBatteryWithTimeout(count = 10) {
-
-            let device = this._device;
-
-            this._logger.log(`looking up battery info for ${device.name}`);
-
-            this._batteryDeviceLocateTimeout = GLib.timeout_add(
-                GLib.PRIORITY_DEFAULT,
-                1000,
-                () => {
-                    this._logger.log(`Looking up battery info for ${device.name}. Trial Left: ${count}`);
-                    let optBat = this._batteryProvider.locateBatteryDevice(device);
-
-                    if (optBat.length) {
-                        this._batteryFound(optBat);
-                        this._batteryDeviceLocateTimeout = null;
-                    } else if (count) {
-                        // try again
-                        this._tryLocateBatteryWithTimeout(count - 1);
-                    } else {
-                        this._logger.log(`Did not find a battery for device ${device.name}`);
-                        this._batteryDeviceLocateTimeout = null;
-                    }
-                });
-        }
-
-        _batteryFound(optBatDevice) {
-            this._optBatDevice = optBatDevice;
-
-            for (const bat of this._optBatDevice) {
-                this._batteryInfo.show();
-                this._batteryInfo.setPercentage(bat.percentage);
-
-                this._batteryDeviceChangeSignal = bat.connect("notify", (_dev, pspec) => {
-                    if (pspec.name == 'percentage') {
-                        this._logger.log(`${_dev.native_path} notified ${pspec.name}, percentage is ${_dev.percentage}`);
-                        this._batteryInfo.setPercentage(bat.percentage);
-                    }
-                });
-            }
-        }
-
         disconnectSignals() {
-            this._optBatDevice.map(bat => bat.disconnect(this._batteryDeviceChangeSignal));
-            this._batteryDeviceChangeSignal = null;
-
-            if (this._batteryDeviceLocateTimeout != null) {
-                GLib.Source.remove(this._batteryDeviceLocateTimeout);
-                this._batteryDeviceLocateTimeout = null;
-            }
-
             if (this._afterReconnectTimeout != null) {
                 GLib.Source.remove(this._afterReconnectTimeout);
                 this._afterReconnectTimeout = null
@@ -134,18 +80,22 @@ export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
             this._device = device;
 
-            this._switch.state = device.isConnected;
-            this.visible = device.isPaired;
-            if (this._showRefreshButton && device.isConnected)
+            this._switch.state = device.connected;
+            this.visible = device.paired;
+            if (this._showRefreshButton && device.connected)
                 this._refreshButton.show();
             else
                 this._refreshButton.hide();
 
             this._disablePending();
 
-            if (device.isConnected)
-                this._tryLocateBatteryWithTimeout();
-
+            if (device.connected) {
+                if (device.battery_percentage && device.battery_percentage > 0) {
+                    this._batteryInfo.show();
+                    this._logger.log(`Battery percentage ${device.alias || device.name}: ${device.battery_percentage}`);
+                    this._batteryInfo.setPercentage(device.battery_percentage);
+                }
+            }
         }
 
         _buildRefreshButton() {
@@ -180,7 +130,20 @@ export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
             button.connect('clicked', () => {
                 this._enablePending();
-                this._device.reconnect();
+                // Reconnect Logic
+                this._logger.log(`Reconnecting to ${this._device.alias || this._device.name}`);
+                // First disconnect
+                this._client.connect_service(this._device.get_object_path(), false, null, () => {
+                    // Wait and reconnect in callback after 7 seconds
+                    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 7000, () => {
+                        this._logger.log(`Trying to Reconnect to ${this._device.alias || this._device.name}`);
+                        this._client.connect_service(this._device.get_object_path(), true, null, () => { });
+                        this._logger.log(`Reconnected to ${this._device.alias || this._device.name}`);
+                        this.sync(this._device);
+                        return GLib.SOURCE_REMOVE;
+                    });
+                });
+
                 this._afterReconnectTimeout = GLib.timeout_add(
                     GLib.PRIORITY_DEFAULT,
                     10000,
@@ -206,10 +169,7 @@ export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
         _connectToggledEvent() {
             this.connect('toggled', (item, state) => {
-                if (state)
-                    this._device.connect();
-                else
-                    this._device.disconnect();
+                this._client.connect_service(this._device.get_object_path(), state, null, () => { });
 
                 // in case there is no change on device
                 this._afterToggleTimeout = GLib.timeout_add(
@@ -291,10 +251,10 @@ export const BatteryInfoWidget = GObject.registerClass(
                 this._label.text = '';
                 this._icon.icon_name = 'battery-missing-symbolic';
             } else {
-                this._label.text = '%d%%'.format(value);
+                this._label.text = `${value}%`;
 
                 let fillLevel = 10 * Math.floor(value / 10);
-                let iconName = 'battery-level-%d-symbolic'.format(fillLevel);
+                let iconName = `battery-level-${fillLevel}-symbolic`;
                 this._icon.icon_name = iconName;
             }
         }
