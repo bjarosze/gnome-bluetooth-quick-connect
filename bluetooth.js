@@ -15,30 +15,31 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import GnomeBluetooth from "gi://GnomeBluetooth";
-const Signals = imports.signals;
-import * as Utils from "./utils.js";
+import * as Signals from 'resource:///org/gnome/shell/misc/signals.js';
+import { spawn } from "./utils.js";
 
-export class BluetoothController {
+export class BluetoothController extends Signals.EventEmitter {
     constructor() {
+        super();
         this._client = new GnomeBluetooth.Client();
         this._deviceNotifyConnected = new Set();
         this._store = this._client.get_devices();
     }
 
     enable() {
-        this._client.connect('notify::default-adapter', () => {
+        this._connectSignal(this._client, 'notify::default-adapter', () => {
             this._deviceNotifyConnected.clear();
             this.emit('default-adapter-changed');
         });
-        this._client.connect('notify::default-adapter-powered', () => {
+        this._connectSignal(this._client, 'notify::default-adapter-powered', () => {
             this._deviceNotifyConnected.clear();
             this.emit('default-adapter-changed');
         });
-        this._client.connect('device-removed', (c, path) => {
+        this._connectSignal(this._client, 'device-removed', (c, path) => {
             this._deviceNotifyConnected.delete(path);
             this.emit('device-deleted');
         });
-        this._client.connect('device-added', (c, device) => {
+        this._connectSignal(this._client, 'device-added', (c, device) => {
             this._connectDeviceNotify(device);
             this.emit('device-inserted', new BluetoothDevice(device));
         });
@@ -47,12 +48,32 @@ export class BluetoothController {
     _connectDeviceNotify(device) {
         const path = device.get_object_path();
 
-        if (this._deviceNotifyConnected.has(path))
-            return;
+        if (this._deviceNotifyConnected.has(path)) return;
 
-        device.connect('notify', (device) => {
+        this._deviceNotifyConnected.add(path);
+        this._connectSignal(device, 'notify', (device) => {
             this.emit('device-changed', new BluetoothDevice(device));
         });
+    }
+
+    _connectSignal(subject, signal_name, method) {
+        if (!this._signals) this._signals = [];
+
+        let signal_id = subject.connect(signal_name, method);
+        this._signals.push({
+            subject,
+            signal_id,
+        });
+    }
+
+    _disconnectSignals() {
+        if (!this._signals) return;
+
+        this._signals.forEach((signal) => {
+            signal.subject.disconnect(signal.signal_id);
+        });
+
+        this._signals = [];
     }
 
     getDevices() {
@@ -67,18 +88,13 @@ export class BluetoothController {
     }
 
     getConnectedDevices() {
-        return this.getDevices().filter((device) => {
-            return device.isConnected;
-        });
+        return this.getDevices().filter(({ isConnected }) => isConnected);
     }
 
     destroy() {
         this._disconnectSignals();
     }
 }
-
-Signals.addSignalMethods(BluetoothController.prototype);
-Utils.addSignalsHelperMethods(BluetoothController.prototype);
 
 export class BluetoothDevice {
     constructor(dev) {
@@ -94,14 +110,14 @@ export class BluetoothDevice {
     }
 
     disconnect() {
-        Utils.spawn(`bluetoothctl -- disconnect ${this.mac}`)
+        spawn(`bluetoothctl -- disconnect ${this.mac}`);
     }
 
     connect() {
-        Utils.spawn(`bluetoothctl -- connect ${this.mac}`)
+        spawn(`bluetoothctl -- connect ${this.mac}`);
     }
 
     reconnect() {
-        Utils.spawn(`bluetoothctl -- disconnect ${this.mac} && sleep 7 && bluetoothctl -- connect ${this.mac}`)
+        spawn(`bluetoothctl -- disconnect ${this.mac} && sleep 7 && bluetoothctl -- connect ${this.mac}`);
     }
 }

@@ -27,7 +27,7 @@ export default class UPowerBatteryProvider {
         }
 
         let _battery_native_path = _bateries.map(bat => bat.native_path)[0] || "NOT-FOUND";
-        this._logger.info(`battery: ${_battery_native_path}`);
+        this._logger.log(`battery: ${_battery_native_path}`);
 
         return _bateries;
     }

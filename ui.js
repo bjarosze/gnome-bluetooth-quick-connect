@@ -18,7 +18,6 @@ import Clutter from "gi://Clutter";
 import GObject from "gi://GObject";
 import St from "gi://St";
 import GLib from "gi://GLib";
-
 import * as PopupMenu from "resource:///org/gnome/shell/ui/popupMenu.js";
 
 export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
@@ -69,13 +68,13 @@ export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
             let device = this._device;
 
-            this._logger.info(`looking up battery info for ${device.name}`);
+            this._logger.log(`looking up battery info for ${device.name}`);
 
             this._batteryDeviceLocateTimeout = GLib.timeout_add(
                 GLib.PRIORITY_DEFAULT,
                 1000,
                 () => {
-                    this._logger.info(`Looking up battery info for ${device.name}`);
+                    this._logger.log(`Looking up battery info for ${device.name}`);
                     let optBat = this._batteryProvider.locateBatteryDevice(device);
 
                     if (optBat.length) {
@@ -85,7 +84,7 @@ export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
                         // try again
                         this._tryLocateBatteryWithTimeout(count - 1);
                     } else {
-                        this._logger.info(`Did not find a battery for device ${device.name}`);
+                        this._logger.log(`Did not find a battery for device ${device.name}`);
                         this._batteryDeviceLocateTimeout = null;
                     }
                 });
@@ -100,7 +99,7 @@ export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
 
                 this._batteryDeviceChangeSignal = bat.connect("notify", (_dev, pspec) => {
                     if (pspec.name == 'percentage') {
-                        this._logger.info(`${_dev.native_path} notified ${pspec.name}, percentage is ${_dev.percentage}`);
+                        this._logger.log(`${_dev.native_path} notified ${pspec.name}, percentage is ${_dev.percentage}`);
                         this._batteryInfo.setPercentage(bat.percentage);
                     }
                 });

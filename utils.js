@@ -21,7 +21,7 @@ export function spawn(command, callback) {
         null,
         ['/usr/bin/env', 'bash', '-c', command],
         null,
-        4 | 2, // GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+        GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
         null
     );
 
@@ -30,9 +30,7 @@ export function spawn(command, callback) {
         GLib.PRIORITY_DEFAULT, pid,
         (_pid, _status) => {
             try {
-                if (callback) {
-                    callback(_pid, _status);
-                }
+                callback && callback(_pid, _status);
             } finally {
                 GLib.spawn_close_pid(_pid);
             }
@@ -44,34 +42,12 @@ export class Logger {
         this._enabled = settings.isDebugModeEnabled();
     }
 
-    info(message) {
+    log(message) {
         if (!this._enabled) return;
-        console.info(`[bluetooth-quick-connect] ${message}`);
+        console.log(`[bluetooth-quick-connect] ${message}`);
     }
 
     warn(message) {
         console.warn(`[bluetooth-quick-connect WARNING] ${message}`);
     }
 };
-
-// FIXME: Not sure what to do with this yet
-export function addSignalsHelperMethods(prototype) {
-    prototype._connectSignal = function (subject, signal_name, method) {
-        if (!this._signals) this._signals = [];
-
-        let signal_id = subject.connect(signal_name, method);
-        this._signals.push({
-            subject: subject,
-            signal_id: signal_id
-        });
-    }
-
-    prototype._disconnectSignals = function () {
-        if (!this._signals) return;
-
-        this._signals.forEach((signal) => {
-            signal.subject.disconnect(signal.signal_id);
-        });
-        this._signals = [];
-    };
-}
