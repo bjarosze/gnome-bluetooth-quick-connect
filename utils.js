@@ -1,4 +1,4 @@
-// Copyright 2018 Bartosz Jaroszewski
+// Copyright 2023 Extensions Valhalla
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 // This program is free software: you can redistribute it and/or modify
@@ -15,16 +15,16 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 export class Logger {
-    constructor(settings) {
-        this._enabled = settings.isDebugModeEnabled();
-    }
+  constructor(settings) {
+    this._enabled = settings.isDebugModeEnabled();
+  }
 
-    log(message) {
-        if (!this._enabled) return;
-        console.log(`[bluetooth-quick-connect] ${message}`);
-    }
+  log(message) {
+    if (!this._enabled) return;
+    console.log(`[bluetooth-quick-connect] ${message}`);
+  }
 
-    warn(message) {
-        console.warn(`[bluetooth-quick-connect WARNING] ${message}`);
-    }
-};
+  warn(message) {
+    console.warn(`[bluetooth-quick-connect WARNING] ${message}`);
+  }
+}

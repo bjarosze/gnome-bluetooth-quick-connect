@@ -1,16 +1,15 @@
-# Spanish translation for Bluetooth Quick Connect.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Spanish Translations for Bluetooth Quick Connect.
+# Copyright (C) 2023 Extensions Valhalla
+# This file is distributed under the same license as the Bluetooth Quick Connect package.
 # Óscar Fernández Díaz <42654671+oscfdezdz@users.noreply.github.com>, 2023.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-25 14:57+0530\n"
-"PO-Revision-Date: 2023-10-25 15:02+0530\n"
-"Last-Translator: Óscar Fernández Díaz <42654671+oscfdezdz@users.noreply."
-"github.com>\n"
+"POT-Creation-Date: 2023-11-05 14:31+0530\n"
+"PO-Revision-Date: 2023-11-05 14:42+0530\n"
+"Last-Translator: Óscar Fernández Díaz <42654671+oscfdezdz@users.noreply.github.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -19,15 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.3.2\n"
 
-#: extension.js:121
-msgid "Bluetooth Quick Connect"
-msgstr "Bluetooth Quick Connect"
-
-#: extension.js:121
-msgid "Error trying to execute \"bluetoothctl\""
-msgstr "Error al intentar ejecutar \"bluetoothctl\""
-
-#: ui.js:202
+#: ui.js:164
 msgid "Wait"
 msgstr "Espere"
 

@@ -1,11 +1,11 @@
-# Occitan locale file.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# Occitan Translations for Bluetooth Quick Connect.
+# Copyright (C) 2023 Extensions Valhalla
+# This file is distributed under the same license as the Bluetooth Quick Connect package.
 # Quentin PAGÈS, 2023.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-10-25 14:57+0530\n"
 "PO-Revision-Date: 2023-10-25 15:04+0530\n"
@@ -17,13 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.3.2\n"
 
-#: extension.js:121
-msgid "Bluetooth Quick Connect"
-msgstr "Bluetooth Quick Connect"
-
-#: extension.js:121
-msgid "Error trying to execute \"bluetoothctl\""
-msgstr "Error en ensajant d’executar « bluetoothctl »"
 
 #: ui.js:202
 msgid "Wait"

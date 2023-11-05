@@ -2,16 +2,16 @@
 
 This extension allows paired Bluetooth devices to be connected and
 disconnected via the GNOME system menu, without need to enter the
-Settings app every time.
+Settings.
 
-## Experimental Gnome 45 Support
-> I have added Gnome 45 Support to this extension, It is highly un-optimized and you may encounter some issues while trying it. Feedback about this is appreciated. Clean ups and optimizations will be done soon.
+> [!NOTE]
+> This is a maintained fork of orignal Extension by [bjarosze](https://github.com/bjarosze).
 
 ## Installation
 
 ### Requirements
 
- * bluez (on ubuntu: `sudo apt install bluez`)
+- `bluez` (on ubuntu: `sudo apt install bluez`)
 
 ### Installation from extensions.gnome.org
 
@@ -19,49 +19,16 @@ https://extensions.gnome.org/extension/1401/bluetooth-quick-connect/
 
 ### Installation from source code
 
+Make sure you have Node.js and `pnpm` installed
+
 ```
-git clone https://github.com/bjarosze/gnome-bluetooth-quick-connect
+git clone https://github.com/Extensions-Valhalla/gnome-bluetooth-quick-connect
 cd gnome-bluetooth-quick-connect
-make install
+pnpm install
+pnpm extension:install
 ```
 
 ## Battery level
 
 Headset battery (currently) requires enabling experimental features in bluez.
 See https://github.com/bjarosze/gnome-bluetooth-quick-connect/pull/42 for more details.
-
-## Troubleshooting
-
-### Connecting and disconnecting does not work
-
-This extensions calls `bluetoothctl` under the hood. If something does not work 
-you can try to execute `bluetoothctl` command in terminal and see what is wrong.
-
-#### Paired devices
-```bash
-bluetoothctl -- paired-devices
-```
-
-#### Connecting
-```bash
-bluetoothctl -- connect <mac address>
-```
-
-#### Disconnecting
-```bash
-bluetoothctl -- disconnect <mac address>
-```
-
-#### Reconnecting
-```bash
-bluetoothctl -- disconnect <mac> && sleep 7 && bluetoothctl -- connect <mac>
-```
-
-### Reconnecting does not work
-
-Not sure why, but sometimes bluetoothctl does not want to connect 
-device after it was disconnected. Reinstalling bluez and rebooting system helped on my ubuntu.
-```
-$ sudo apt purge bluez gnome-bluetooth pulseaudio-module-bluetooth
-$ sudo apt install bluez gnome-bluetooth pulseaudio-module-bluetooth
-```

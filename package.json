@@ -1,0 +1,29 @@
+{
+  "name": "@extensions-valhalla/bluetooth-quick-connect",
+  "version": "1.0.0",
+  "private": "true",
+  "description": "Connect/Disconnect with bluetooth devices from quick settings and get battery status.",
+  "scripts": {
+    "clean": "rm -fr bluetooth-quick-connect@extensions.valhalla.gmail.com.shell-extension.zip schemas/gschemas.compiled po/*.mo",
+    "extension:build": "gnome-extensions pack -f --extra-source=bluetooth.js --extra-source=settings.js --extra-source=Settings.ui --extra-source=ui.js --extra-source=utils.js -o .",
+    "extension:install": "pnpm run extension:build && gnome-extensions install bluetooth-quick-connect@extensions.valhalla.gmail.com.shell-extension.zip",
+    "translation:update-pot": "xgettext --from-code=UTF-8 extension.js ui.js Settings.ui -o po/bluetooth-quick-connect.pot",
+    "format": "prettier --write ."
+  },
+  "contributors": [
+    {
+      "name": "BlankParticle",
+      "email": "hello@blankparticle.in"
+    }
+  ],
+  "prettier": {
+    "useTabs": false,
+    "tabWidth": 2,
+    "singleQuote": false,
+    "trailingComma": "all",
+    "printWidth": 100
+  },
+  "devDependencies": {
+    "prettier": "^3.0.3"
+  }
+}

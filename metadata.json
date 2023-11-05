@@ -1,11 +1,9 @@
 {
-  "name": "Bluetooth Quick Connect",
-  "description": "Allow to connect to paired devices from gnome control panel.\n",
-  "uuid": "bluetooth-quick-connect@bjarosze.gmail.com",
-  "url": "https://github.com/bjarosze/gnome-bluetooth-quick-connect",
+  "name": "Bluetooth Quick Connect (Fork)",
+  "description": "Connect/Disconnect with bluetooth devices from quick settings and get battery status.\nIt is a maintained fork of the original extension by @bjarosze",
+  "uuid": "bluetooth-quick-connect@extensions.valhalla.gmail.com",
+  "url": "https://github.com/Extensions-Valhalla/gnome-bluetooth-quick-connect",
   "settings-schema": "org.gnome.shell.extensions.bluetooth-quick-connect",
   "gettext-domain": "bluetooth-quick-connect",
-  "shell-version": [
-    "45"
-  ]
+  "shell-version": ["45"]
 }

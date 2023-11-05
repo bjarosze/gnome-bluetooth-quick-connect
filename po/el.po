@@ -1,15 +1,15 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Greek Translations for Bluetooth Quick Connect.
+# Copyright (C) 2023 Extensions Valhalla
+# This file is distributed under the same license as the Bluetooth Quick Connect package.
+# Καραχάλιος-Στάγκας Αθανάσιος-Νεκτάριος , 2023.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-25 14:57+0530\n"
-"PO-Revision-Date: 2023-10-25 15:01+0530\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2023-11-05 14:31+0530\n"
+"PO-Revision-Date: 2023-11-05 14:38+0530\n"
+"Last-Translator: Καραχάλιος-Στάγκας Αθανάσιος-Νεκτάριος\n"
 "Language-Team: \n"
 "Language: el\n"
 "MIME-Version: 1.0\n"
@@ -18,15 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.3.2\n"
 
-#: extension.js:121
-msgid "Bluetooth Quick Connect"
-msgstr "Γρήγορη σύνδεση Bluetooth"
-
-#: extension.js:121
-msgid "Error trying to execute \"bluetoothctl\""
-msgstr "Σφάλμα κατά την προσπάθεια εκτέλεσης του \"bluetoothctl\""
-
-#: ui.js:202
+#: ui.js:164
 msgid "Wait"
 msgstr "Αναμονή"
 

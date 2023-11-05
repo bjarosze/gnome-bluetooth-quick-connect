@@ -1,14 +1,14 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR Amerey.eu <info@amerey.eu>, 2023.
+# Czech	Translations for Bluetooth Quick Connect.
+# Copyright (C) 2023 Extensions Valhalla
+# This file is distributed under the same license as the Bluetooth Quick Connect package.
+# Amerey.eu <info@amerey.eu>, 2023.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-25 14:47+0530\n"
-"PO-Revision-Date: 2023-10-25 14:53+0530\n"
+"POT-Creation-Date: 2023-11-05 14:31+0530\n"
+"PO-Revision-Date: 2023-11-05 14:32+0530\n"
 "Last-Translator: Amerey.eu <info@amerey.eu>\n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -18,15 +18,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);\n"
 "X-Generator: Poedit 3.3.2\n"
 
-#: extension.js:121
-msgid "Bluetooth Quick Connect"
-msgstr "Rychlé připojení Bluetooth"
-
-#: extension.js:121
-msgid "Error trying to execute \"bluetoothctl\""
-msgstr "Chyba při pokusu o spuštění \"bluetoothctl\""
-
-#: ui.js:202
+#: ui.js:164
 msgid "Wait"
 msgstr "Počkejte"
 
