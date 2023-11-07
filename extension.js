@@ -1,4 +1,4 @@
-// Copyright 2023 Extensions Valhalla
+// Copyright 2018 Bartosz Jaroszewski
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 // This program is free software: you can redistribute it and/or modify
@@ -26,18 +26,16 @@ import { PopupBluetoothDeviceMenuItem } from "./ui.js";
 export default class BluetoothQuickConnect extends Extension {
   constructor(metadata) {
     super(metadata);
-    this._settings = new Settings(this);
-    this._logger = new Logger(this._settings);
-    this._controller = new BluetoothController();
-    this._menu = new PopupMenu.PopupMenuSection();
-    this._items = {};
-
-    this._logger.log("Initializing extension");
-    this._queueModify();
   }
 
   enable() {
+    this._settings = new Settings(this);
+    this._logger = new Logger(this._settings);
+    this._controller = new BluetoothController();
     this._logger.log("Enabling extension");
+    this._queueModify();
+    this._menu = new PopupMenu.PopupMenuSection();
+    this._items = {};
     this._controller.enable();
     this._refresh();
     this._connectControllerSignals();
@@ -47,7 +45,14 @@ export default class BluetoothQuickConnect extends Extension {
 
   disable() {
     this._logger.log("Disabling extension");
-    this._destroy();
+    this._settings = null;
+    this._logger = null;
+    this._controller && this._controller.destroy();
+    this._controller = null;
+    this._menu = null;
+    this._disconnectSignals();
+    this._removeDevicesFromMenu();
+    this._disconnectIdleMonitor();
   }
 
   _queueModify() {
@@ -210,17 +215,7 @@ export default class BluetoothQuickConnect extends Extension {
   }
 
   _removeDevicesFromMenu() {
-    Object.values(this._items).forEach((item) => {
-      item.disconnectSignals();
-      item.destroy();
-    });
+    Object.values(this._items).forEach((item) => item.destroy());
     this._items = {};
-  }
-
-  _destroy() {
-    this._disconnectSignals();
-    this._removeDevicesFromMenu();
-    this._disconnectIdleMonitor();
-    this._controller && this._controller.destroy();
   }
 }

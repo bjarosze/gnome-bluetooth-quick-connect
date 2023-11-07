@@ -2,7 +2,7 @@
   "name": "Bluetooth Quick Connect",
   "description": "Allow to connect to paired devices from gnome control panel.\n",
   "uuid": "bluetooth-quick-connect@bjarosze.gmail.com",
-  "url": "https://github.com/bjarosze/gnome-bluetooth-quick-connect",
+  "url": "https://github.com/Extensions-Valhalla/gnome-bluetooth-quick-connect",
   "settings-schema": "org.gnome.shell.extensions.bluetooth-quick-connect",
   "gettext-domain": "bluetooth-quick-connect",
   "shell-version": ["45"]

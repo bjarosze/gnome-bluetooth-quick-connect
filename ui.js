@@ -1,4 +1,4 @@
-// Copyright 2023 Extensions Valhalla
+// Copyright 2018 Bartosz Jaroszewski
 // SPDX-License-Identifier: GPL-2.0-or-later
 //
 // This program is free software: you can redistribute it and/or modify
@@ -133,7 +133,7 @@ export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
         // First disconnect
         this._client.connect_service(this._device.get_object_path(), false, null, () => {
           // Wait and reconnect in callback after 7 seconds
-          GLib.timeout_add(GLib.PRIORITY_DEFAULT, 7000, () => {
+          this._reconnectTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 7000, () => {
             this._logger.log(`Trying to Reconnect to ${this._device.alias || this._device.name}`);
             this._client.connect_service(this._device.get_object_path(), true, null, () => {});
             this._logger.log(`Reconnected to ${this._device.alias || this._device.name}`);
@@ -206,6 +206,15 @@ export const PopupBluetoothDeviceMenuItem = GObject.registerClass(
       this._switch.show();
       this._pendingLabel.hide();
       this.reactive = true;
+    }
+
+    destroy() {
+      if (this._reconnectTimeout) {
+        GLib.Source.remove(this._reconnectTimeout);
+        this._reconnectTimeout = null;
+      }
+      this.disconnectSignals();
+      super.destroy();
     }
   },
 );
